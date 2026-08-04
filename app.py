@@ -97,18 +97,28 @@ def _parse_json(raw):
     return json.loads(raw.strip())
 
 
+CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
+
+
 def compare(a, b):
     if not GEMINI_KEY:
         return _fallback(a, b)
+    key = f"{a.lower()}|{b.lower()}"
+    # cache hit -> no API call (saves quota)
+    if key in CACHE:
+        return CACHE[key]
     try:
         result = _parse_json(_call_gemini(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
-        # validate required keys
         if "scores" not in result or "winner" not in result:
             raise ValueError("incomplete")
+        CACHE[key] = result
         return result
     except Exception as e:
         global LAST_ERROR
         LAST_ERROR = f"{type(e).__name__}: {str(e)[:200]}"
+        # 429 = rate limited -> signal so UI can say "try later"
+        if "429" in str(e):
+            return {"_rate_limited": True, "a": a, "b": b}
         return _fallback(a, b)
 
 
@@ -200,6 +210,14 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, json.dumps({"ok": False, "error": "both items required"}))
             return
         result = compare(a, b)
+        # rate-limited: don't store fake data, return clear signal
+        if isinstance(result, dict) and result.get("_rate_limited"):
+            self._send(429, json.dumps({
+                "ok": False,
+                "rate_limited": True,
+                "error": "AI is rate-limited right now. Please try again in a minute — or check back shortly.",
+            }))
+            return
         item = {
             "id": len(COMPARES) + 1,
             "item_a": a,
