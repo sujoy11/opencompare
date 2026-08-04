@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenCompare — AI-powered comparison engine (MVP).
+OpenCompare — AI comparison engine (MVP, professional build).
 Pure stdlib HTTP server · Gemini for analysis · graceful fallback.
 """
 import json
@@ -9,7 +9,6 @@ import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 import urllib.request
-import urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "compare.json")
@@ -39,31 +38,33 @@ CATEGORIES = [
     "Databases", "Payment Gateways", "Website Builders",
 ]
 
-SYSTEM_PROMPT = (
-    "You are OpenCompare, a neutral comparison engine. "
-    "Compare the two items factually and fairly. "
+PROMPT = (
+    "You are OpenCompare, a neutral, fact-based comparison engine. "
+    "Compare the two items thoroughly and fairly. "
     "Return ONLY valid JSON (no markdown, no code fences): "
     '{"winner":"A|B|Tie",'
     '"scores":{"a":<0-10>,"b":<0-10>},'
     '"a_pros":[3 short strings],"a_cons":[3 short strings],'
     '"b_pros":[3 short strings],"b_cons":[3 short strings],'
-    '"metrics":[{"label":"Price","a":"...","b":"..."},'
-    '{"label":"Ease of Use","a":"...","b":"..."},'
+    '"metrics":['
+    '{"label":"Price","a":"...","b":"..."},'
     '{"label":"Key Features","a":"...","b":"..."},'
-    '{"label":"Best For","a":"...","b":"..."}],'
+    '{"label":"Performance","a":"...","b":"..."},'
+    '{"label":"Ease of Use","a":"...","b":"..."},'
+    '{"label":"Supported Platforms","a":"...","b":"..."},'
+    '{"label":"Integrations","a":"...","b":"..."},'
+    '{"label":"Security","a":"...","b":"..."}],'
+    '"best_for":"one short phrase",'
     '"summary":"2-3 sentence neutral summary",'
-    '"best_for":"one short phrase"}'
+    '"recommendation":"one actionable sentence for a buyer",'
+    '"alternatives":["alt1","alt2"]}'
 )
 
 
 def _call_gemini(prompt):
-    body = json.dumps(
-        {"contents": [{"parts": [{"text": prompt}]}]}
-    ).encode()
+    body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
     req = urllib.request.Request(
-        GEMINI_URL,
-        data=body,
-        headers={"Content-Type": "application/json"},
+        GEMINI_URL, data=body, headers={"Content-Type": "application/json"}
     )
     with urllib.request.urlopen(req, timeout=25) as r:
         d = json.load(r)
@@ -83,11 +84,7 @@ def compare(a, b):
     if not GEMINI_KEY:
         return _fallback(a, b)
     try:
-        prompt = (
-            f"Compare '{a}' vs '{b}'.\n{SYSTEM_PROMPT}"
-        )
-        result = _parse_json(_call_gemini(prompt))
-        return result
+        return _parse_json(_call_gemini(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
     except Exception:
         return _fallback(a, b)
 
@@ -102,12 +99,17 @@ def _fallback(a, b):
         "b_cons": [f"{b} has some limitations"],
         "metrics": [
             {"label": "Price", "a": "Varies", "b": "Varies"},
-            {"label": "Ease of Use", "a": "Good", "b": "Good"},
             {"label": "Key Features", "a": "Varies", "b": "Varies"},
-            {"label": "Best For", "a": "General use", "b": "General use"},
+            {"label": "Performance", "a": "Good", "b": "Good"},
+            {"label": "Ease of Use", "a": "Good", "b": "Good"},
+            {"label": "Supported Platforms", "a": "Multiple", "b": "Multiple"},
+            {"label": "Integrations", "a": "Varies", "b": "Varies"},
+            {"label": "Security", "a": "Standard", "b": "Standard"},
         ],
-        "summary": f"{a} and {b} each have trade-offs; pick based on your priority.",
         "best_for": "Depends on use case",
+        "summary": f"{a} and {b} each have trade-offs; pick based on your priority.",
+        "recommendation": "Try both where possible before committing.",
+        "alternatives": ["Other options exist in this category"],
     }
 
 
