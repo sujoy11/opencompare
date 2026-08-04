@@ -51,11 +51,14 @@
   .winner.tie{background:var(--bg2);border:1px solid var(--border);color:var(--muted);}
   .sec-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:8px;}
   .sec-title::after{content:"";flex:1;height:1px;background:var(--border);}
-  .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  table{width:100%;border-collapse:collapse;min-width:280px;}
-  th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top;word-break:break-word;}
-  th{color:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;width:130px;white-space:nowrap;}
-  td.a{color:var(--a);font-weight:700;} td.b{color:var(--b);font-weight:700;}
+  .metric-grid{display:grid;gap:12px;}
+  .metric{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:0;overflow:hidden;}
+  .metric .mh{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:12px 16px 0;}
+  .metric .mb{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .metric .col{padding:10px 16px 16px;font-size:14px;line-height:1.55;word-break:break-word;}
+  .metric .col.a{color:var(--a);border-right:1px solid var(--border);}
+  .metric .col.b{color:var(--b);}
+  .metric .col .lab{font-size:10px;font-weight:700;opacity:.7;display:block;margin-bottom:3px;}
   .pc{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .pcol{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;min-width:0;}
   .pcol h4{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
@@ -79,6 +82,8 @@
     .vsbadge{text-align:center;padding:2px 0;}
     .scores{grid-template-columns:1fr;}
     .pc{grid-template-columns:1fr;}
+    .metric .mb{grid-template-columns:1fr;}
+    .metric .col.a{border-right:none;border-bottom:1px solid var(--border);}
     th{width:110px;white-space:normal;}
   }
 </style>
@@ -142,7 +147,6 @@
   function render(item){
     const a=item.item_a,b=item.item_b,res=item.result;
     const sa=res.scores.a, sb=res.scores.b;
-    const m=(res.metrics||[]).map(x=>`<tr><th>${x.label}</th><td class="a">${x.a}</td><td class="b">${x.b}</td></tr>`).join('');
     let wcls='tie', wtxt='Tie';
     if(res.winner==='A'){wcls='a';wtxt=a;}else if(res.winner==='B'){wcls='b';wtxt=b;}
     const alts=(res.alternatives||[]).map(x=>`<span class="alt">${x}</span>`).join('');
@@ -156,7 +160,16 @@
         <div class="winner ${wcls}">🏆 Overall Winner: ${wtxt} &nbsp;·&nbsp; ${sa} / ${sb}</div>
 
         <div class="sec-title">Detailed Comparison</div>
-        <div class="table-wrap"><table>${m}</table></div>
+        <div class="metric-grid">
+          ${(res.metrics||[]).map(x=>`
+            <div class="metric">
+              <div class="mh">${x.label}</div>
+              <div class="mb">
+                <div class="col a"><span class="lab">${a}</span>${x.a}</div>
+                <div class="col b"><span class="lab">${b}</span>${x.b}</div>
+              </div>
+            </div>`).join('')}
+        </div>
 
         <div class="sec-title">Strengths &amp; Weaknesses</div>
         <div class="pc">
