@@ -22,16 +22,13 @@ if os.path.exists(DATA):
     except Exception:
         COMPARES = []
 
-KEY_FILE = os.path.join(HERE, ".gemini_key")
-GEMINI_KEY = os.environ.get("GEMINI_KEY", "")
+KEY_FILE = os.path.join(HERE, ".groq_key")
+GROQ_KEY = os.environ.get("GROQ_KEY", "")
 LAST_ERROR = ""
-if not GEMINI_KEY and os.path.exists(KEY_FILE):
-    GEMINI_KEY = open(KEY_FILE).read().strip()
+if not GROQ_KEY and os.path.exists(KEY_FILE):
+    GROQ_KEY = open(KEY_FILE).read().strip()
 
-GEMINI_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-flash-latest:generateContent?key=" + GEMINI_KEY
-) if GEMINI_KEY else ""
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions" if GROQ_KEY else ""
 
 CATEGORIES = [
     "AI Tools", "Software", "Hosting", "Smartphones", "Laptops",
@@ -62,20 +59,27 @@ PROMPT = (
 )
 
 
-def _call_gemini(prompt):
-    body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
-    models = ["gemini-flash-latest", "gemini-1.5-flash", "gemini-pro", "gemini-2.0-flash"]
-    last_err = ""
-    for m in models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={GEMINI_KEY}"
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=30) as r:
-                d = json.load(r)
-                return d["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception as e:
-            last_err = f"{type(e).__name__}: {str(e)[:150]}"
-    raise RuntimeError(last_err)
+def _call_groq(prompt):
+    """Call Groq (OpenAI-compatible) and return the model's text response."""
+    body = json.dumps({
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,
+        "response_format": {"type": "json_object"},
+    }).encode()
+    req = urllib.request.Request(
+        GROQ_URL, data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {GROQ_KEY}",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        d = json.load(r)
+        return d["choices"][0]["message"]["content"]
 
 
 def _parse_json(raw):
@@ -101,14 +105,14 @@ CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
 
 
 def compare(a, b):
-    if not GEMINI_KEY:
+    if not GROQ_KEY:
         return _fallback(a, b)
     key = f"{a.lower()}|{b.lower()}"
     # cache hit -> no API call (saves quota)
     if key in CACHE:
         return CACHE[key]
     try:
-        result = _parse_json(_call_gemini(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
+        result = _parse_json(_call_groq(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
         if "scores" not in result or "winner" not in result:
             raise ValueError("incomplete")
         CACHE[key] = result
@@ -183,10 +187,10 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as ne:
                 net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:100]}"
             self._send(200, json.dumps({
-                "gemini_key_present": bool(GEMINI_KEY),
-                "gemini_key_len": len(GEMINI_KEY),
+                "groq_key_present": bool(GROQ_KEY),
+                "groq_key_len": len(GROQ_KEY),
                 "port": os.environ.get("PORT", "unset"),
-                "network_to_googleapis": net_ok,
+                "network_to_groq": net_ok,
                 "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
