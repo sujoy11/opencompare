@@ -1,0 +1,2 @@
+# No external dependencies — pure Python standard library
+# (Gemini API called via urllib.request)

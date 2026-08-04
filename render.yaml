@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: opencompare
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: "echo 'no build needed'"
+    startCommand: "python3 app.py"
+    envVars:
+      - key: GEMINI_KEY
+        sync: false
