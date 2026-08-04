@@ -152,10 +152,20 @@ class Handler(BaseHTTPRequestHandler):
         elif p.path == "/api/categories":
             self._send(200, json.dumps(CATEGORIES))
         elif p.path == "/api/debug":
+            net_ok = "unknown"
+            try:
+                urllib.request.urlopen(
+                    "https://generativelanguage.googleapis.com/",
+                    timeout=8,
+                )
+                net_ok = "reachable"
+            except Exception as ne:
+                net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:120]}"
             self._send(200, json.dumps({
                 "gemini_key_present": bool(GEMINI_KEY),
                 "gemini_key_len": len(GEMINI_KEY),
                 "port": os.environ.get("PORT", "unset"),
+                "network_to_googleapis": net_ok,
                 "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
