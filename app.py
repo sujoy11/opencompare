@@ -29,7 +29,7 @@ if not HF_TOKEN and os.path.exists(KEY_FILE):
     HF_TOKEN = open(KEY_FILE).read().strip()
 
 HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
-HF_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}" if HF_TOKEN else ""
+HF_URL = f"https://router.huggingface.co/v1/chat/completions" if HF_TOKEN else ""
 
 CATEGORIES = [
     "AI Tools", "Software", "Hosting", "Smartphones", "Laptops",
@@ -61,24 +61,15 @@ PROMPT = (
 
 
 def _call_hf(prompt):
-    """Call HuggingFace serverless Inference API and return generated text."""
-    system = ("You are OpenCompare, a neutral fact-based comparison engine. "
-             "You must reply with ONLY valid JSON, no markdown, no code fences.")
-    messages = [
-        {"role": "system", "content": system},
-        {"role": "user", "content": prompt},
-    ]
-    # build a simple chat prompt the model understands
-    full = (f"<|begin_of_text|><|system|>\n{system}\n<|user|>\n{prompt}\n"
-            f"<|assistant|>\n")
+    """Call HuggingFace router (OpenAI-compatible) and return model text."""
     body = json.dumps({
-        "inputs": full,
-        "parameters": {
-            "max_new_tokens": 900,
-            "temperature": 0.3,
-            "return_full_text": False,
-            "do_sample": True,
-        },
+        "model": HF_MODEL,
+        "messages": [
+            {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 600,
     }).encode()
     req = urllib.request.Request(
         HF_URL, data=body,
@@ -87,14 +78,9 @@ def _call_hf(prompt):
             "Authorization": f"Bearer {HF_TOKEN}",
         },
     )
-    with urllib.request.urlopen(req, timeout=45) as r:
+    with urllib.request.urlopen(req, timeout=90) as r:
         d = json.load(r)
-        # HF returns a list of {generated_text:...}
-        if isinstance(d, list) and d:
-            return d[0].get("generated_text", "")
-        if isinstance(d, dict):
-            return d.get("generated_text", "")
-        return str(d)
+        return d["choices"][0]["message"]["content"]
 
 
 def _parse_json(raw):
