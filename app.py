@@ -69,7 +69,7 @@ def _call_hf(prompt):
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.3,
-        "max_tokens": 600,
+        "max_tokens": 350,
     }).encode()
     req = urllib.request.Request(
         HF_URL, data=body,
