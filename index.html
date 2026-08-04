@@ -1,198 +1,571 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>OpenCompare — Compare Anything. Decide Smarter.</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#ffffff;--bg2:#f7f8fb;--card:#ffffff;--text:#0f172a;--muted:#64748b;
-    --border:#e6e9ef;--pri:#4f46e5;--pri2:#06b6d4;
-    --a:#4f46e5;--b:#059669;--green:#10b981;--red:#ef4444;
-    --shadow:0 1px 2px rgba(15,23,42,.04),0 10px 30px -12px rgba(15,23,42,.08);
-    --radius:16px;
+    --bg:#ffffff;
+    --bg-grid: rgba(15,23,42,0.03);
+    --panel:#ffffff;
+    --panel-2:#f7f8fb;
+    --border:#e6e9ef;
+    --border-soft:#eef1f6;
+    --text:#0f172a;
+    --muted:#64748b;
+    --muted-2:#94a3b8;
+    --a:#4f46e5;
+    --a-soft:rgba(79,70,229,0.08);
+    --a-line:rgba(79,70,229,0.30);
+    --b:#059669;
+    --b-soft:rgba(5,150,105,0.08);
+    --b-line:rgba(5,150,105,0.30);
+    --gold:#d97706;
+    --good:#10b981;
+    --radius:14px;
+    --font-display:'Space Grotesk', system-ui, sans-serif;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', ui-monospace, monospace;
   }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{overflow-x:hidden;width:100%;}
-  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.6;font-size:15px;}
-  .wrap{max-width:980px;margin:0 auto;padding:0 18px;width:100%;}
-  header{text-align:center;padding:56px 0 4px;}
-  .logo{font-size:clamp(30px,7vw,40px);font-weight:800;letter-spacing:-1.5px;color:var(--text);}
-  .logo span{color:var(--pri);}
-  .tag{color:var(--muted);font-size:16px;margin-top:10px;font-weight:500;}
-  .hero-sub{font-size:13px;color:var(--muted);margin-top:6px;letter-spacing:.2px;}
 
-  .comparator{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(20px,4vw,30px);margin:32px 0 16px;box-shadow:var(--shadow);}
-  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;}
-  .lbl{font-size:11px;font-weight:800;letter-spacing:1px;margin-bottom:9px;display:block;}
-  .lbl.a{color:var(--a);} .lbl.b{color:var(--b);}
-  .inp{background:var(--bg2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:16px;font-size:16px;width:100%;font-family:inherit;transition:.15s;min-width:0;}
-  .inp:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(79,70,229,.12);}
-  .vsbadge{font-weight:900;font-size:20px;color:var(--muted);padding-bottom:14px;white-space:nowrap;}
-  .go{display:block;width:100%;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:none;padding:16px;border-radius:13px;font-weight:800;font-size:18px;cursor:pointer;margin-top:18px;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;}
-  .go:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(79,70,229,.25);}
-  .go:disabled{opacity:.6;cursor:wait;}
-  .chips{text-align:center;margin-top:18px;color:var(--muted);font-size:13px;line-height:2.6;}
-  .chip{display:inline-block;background:var(--bg2);border:1px solid var(--border);padding:6px 13px;border-radius:999px;margin:4px;cursor:pointer;font-size:12px;transition:.15s;}
-  .chip:hover{border-color:var(--pri);color:var(--pri);}
+  *{box-sizing:border-box;}
+  html{-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(79,70,229,0.07), transparent 45%),
+      radial-gradient(circle at 90% 10%, rgba(5,150,105,0.06), transparent 40%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.5;
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size:34px 34px;
+    mask-image:radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent);
+    z-index:0;
+  }
+  .shell{position:relative; z-index:1; max-width:560px; margin:0 auto;}
 
-  .result{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(20px,4vw,32px);margin-bottom:24px;box-shadow:var(--shadow);animation:fade .35s ease;}
-  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-  .rtitle{font-size:clamp(20px,5vw,26px);font-weight:800;text-align:center;margin-bottom:24px;line-height:1.3;word-break:break-word;}
-  .rtitle .ra{color:var(--a);} .rtitle .rb{color:var(--b);}
-  .scores{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;}
-  .score{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px 16px;text-align:center;}
-  .score .n{font-size:clamp(36px,9vw,46px);font-weight:800;line-height:1;}
-  .score.a .n{color:var(--a);} .score.b .n{color:var(--b);}
-  .score .l{color:var(--muted);font-size:13px;margin-top:9px;font-weight:600;}
-  .winner{text-align:center;font-size:15px;font-weight:800;padding:14px 16px;border-radius:13px;margin-bottom:24px;line-height:1.5;}
-  .winner.a{background:rgba(79,70,229,.08);border:1px solid rgba(79,70,229,.25);color:var(--a);}
-  .winner.b{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.25);color:#047857;}
-  .winner.tie{background:var(--bg2);border:1px solid var(--border);color:var(--muted);}
-  .sec-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:8px;}
-  .sec-title::after{content:"";flex:1;height:1px;background:var(--border);}
-  .metric-grid{display:grid;gap:12px;}
-  .metric{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:0;overflow:hidden;}
-  .metric .mh{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:12px 16px 0;}
-  .metric .mb{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-  .metric .col{padding:10px 16px 16px;font-size:14px;line-height:1.55;word-break:break-word;}
-  .metric .col.a{color:var(--a);border-right:1px solid var(--border);}
-  .metric .col.b{color:var(--b);}
-  .metric .col .lab{font-size:10px;font-weight:700;opacity:.7;display:block;margin-bottom:3px;}
-  .pc{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .pcol{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;min-width:0;}
-  .pcol h4{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-  .pcol.a h4{color:var(--a);} .pcol.b h4{color:var(--b);}
-  .pcol ul{list-style:none;}
-  .pcol li{font-size:13px;padding:6px 0;color:var(--text);display:flex;gap:9px;align:flex-start;line-height:1.5;}
-  .pcol.pros li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0;}
-  .pcol.cons li::before{content:"✕";color:var(--red);font-weight:800;flex-shrink:0;}
-  .sum{background:linear-gradient(135deg,rgba(79,70,229,.06),rgba(6,182,212,.06));border:1px solid var(--border);border-left:4px solid var(--pri);border-radius:12px;padding:18px;font-size:14px;line-height:1.7;}
-  .rec{background:linear-gradient(135deg,rgba(5,150,105,.07),rgba(79,70,229,.05));border:1px solid #d1fae5;border-left:4px solid var(--b);border-radius:12px;padding:20px;font-size:14px;margin-top:16px;line-height:1.7;color:var(--text);}
-  .rec .rh{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--b);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
-  .alts{margin-top:16px;display:flex;gap:9px;flex-wrap:wrap;}
-  .alt{background:var(--bg2);border:1px solid var(--border);border-radius:999px;padding:7px 15px;font-size:12px;font-weight:600;color:var(--muted);}
-  .best{text-align:center;font-size:14px;color:var(--muted);margin-top:18px;font-style:italic;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
-  .loading{text-align:center;padding:56px 16px;color:var(--muted);}
-  .spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--pri);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 16px;}
-  @keyframes sp{to{transform:rotate(360deg);}}
-  footer{text-align:center;color:var(--muted);font-size:12px;padding:32px 0 44px;line-height:1.7;}
+  a{color:inherit;}
 
-  @media(max-width:560px){
-    .vs{grid-template-columns:1fr;gap:12px;}
-    .vsbadge{text-align:center;padding:2px 0;}
-    .scores{grid-template-columns:1fr;}
-    .pc{grid-template-columns:1fr;}
-    .metric .mb{grid-template-columns:1fr;}
-    .metric .col.a{border-right:none;border-bottom:1px solid var(--border);}
-    th{width:110px;white-space:normal;}
+  /* ---------- Header ---------- */
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:34px;}
+  .brand{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:16px; letter-spacing:-0.01em;}
+  .brand-mark{
+    width:26px; height:26px; border-radius:8px;
+    background:linear-gradient(135deg, var(--a), var(--b));
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; box-shadow:0 0 0 1px rgba(15,23,42,0.06) inset;
+  }
+  .status-pill{
+    display:flex; align-items:center; gap:6px;
+    font-family:var(--font-mono); font-size:10.5px; color:var(--muted);
+    border:1px solid var(--border); border-radius:99px; padding:5px 10px;
+    text-transform:uppercase; letter-spacing:0.06em;
+    background:var(--panel);
+  }
+  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--good); box-shadow:0 0 8px var(--good);}
+
+  /* ---------- Hero ---------- */
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; color:var(--muted-2);
+    text-transform:uppercase; letter-spacing:0.14em; margin:0 0 12px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(30px, 8vw, 40px); line-height:1.08; letter-spacing:-0.02em;
+    margin:0 0 14px;
+  }
+  h1 .line-b{
+    background:linear-gradient(90deg, var(--a), var(--b));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub{color:var(--muted); font-size:15px; max-width:46ch; margin:0 0 32px;}
+
+  /* ---------- Duel ---------- */
+  .duel{position:relative; display:flex; flex-direction:column; gap:0; margin-bottom:22px;}
+
+  .side{
+    position:relative;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px 16px 15px;
+    transition:border-color .18s ease, box-shadow .18s ease;
+    box-shadow:0 1px 2px rgba(15,23,42,.03);
+  }
+  .side--a{border-left:3px solid var(--a);}
+  .side--b{border-left:3px solid var(--b);}
+  .side--a:focus-within{border-color:var(--a-line); box-shadow:0 0 0 3px var(--a-soft);}
+  .side--b:focus-within{border-color:var(--b-line); box-shadow:0 0 0 3px var(--b-soft);}
+
+  .side-label{
+    display:flex; align-items:center; gap:7px;
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.1em;
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .side-tag{
+    width:18px; height:18px; border-radius:5px; font-size:10px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono);
+  }
+  .side--a .side-tag{background:var(--a-soft); color:var(--a);}
+  .side--b .side-tag{background:var(--b-soft); color:var(--b);}
+  .side--a .side-label{color:var(--a);}
+  .side--b .side-label{color:var(--b);}
+
+  .side input{
+    width:100%; background:transparent; border:none; outline:none;
+    color:var(--text); font-family:var(--font-display); font-weight:600;
+    font-size:18px; padding:2px 0;
+  }
+  .side input::placeholder{color:var(--muted-2); font-weight:500;}
+
+  .vs-wrap{
+    display:flex; align-items:center; justify-content:center;
+    height:44px; margin:-3px 0;
+  }
+  .vs-line{flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);}
+  .vs-badge{
+    position:relative;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:11px;
+    color:var(--muted); letter-spacing:0.02em;
+    flex-shrink:0; margin:0 10px;
+    transition:color .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .vs-badge.is-ready{color:var(--text); border-color:var(--border); box-shadow:0 0 0 1px var(--border), 0 0 24px -6px rgba(79,70,229,0.35), 0 0 24px -6px rgba(5,150,105,0.25);}
+  .vs-badge.is-loading{animation:spin 0.9s linear infinite; color:transparent;}
+  .vs-badge.is-loading::after{
+    content:""; position:absolute; inset:3px; border-radius:50%;
+    border:2px solid var(--border); border-top-color:var(--a); border-right-color:var(--b);
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .vs-badge.is-loading{animation:none;} }
+
+  /* ---------- Examples ---------- */
+  .examples{margin:20px 0 22px;}
+  .examples-label{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-family:var(--font-mono); font-size:12px; color:var(--muted);
+    background:var(--panel); border:1px solid var(--border); border-radius:8px;
+    padding:7px 11px; cursor:pointer; transition:all .15s ease;
+  }
+  .chip:hover{color:var(--text); border-color:var(--muted-2);}
+  .chip:active{transform:scale(0.97);}
+
+  /* ---------- Button ---------- */
+  .btn-compare{
+    width:100%; border:none; border-radius:12px; cursor:pointer;
+    padding:16px; font-family:var(--font-display); font-weight:700; font-size:15px;
+    color:#ffffff; background:linear-gradient(90deg, var(--a), var(--b));
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s ease, opacity .15s ease, box-shadow .15s ease;
+    box-shadow:0 10px 30px -12px rgba(79,70,229,0.45);
+  }
+  .btn-compare:active{transform:scale(0.985);}
+  .btn-compare:disabled{opacity:0.55; cursor:not-allowed; box-shadow:none;}
+
+  .error-msg{
+    display:none; align-items:center; gap:7px;
+    font-family:var(--font-mono); font-size:12.5px; color:#b91c1c;
+    background:#fef2f2; border:1px solid #fecaca;
+    border-radius:9px; padding:10px 12px; margin-top:12px;
+  }
+  .error-msg.is-visible{display:flex;}
+
+  /* ---------- Categories strip ---------- */
+  .cats{margin-top:26px; padding-top:20px; border-top:1px solid var(--border-soft);}
+  .cats-inner{display:flex; flex-wrap:wrap; gap:6px 14px; font-family:var(--font-mono); font-size:11px; color:var(--muted-2);}
+  .cats-inner span{white-space:nowrap;}
+
+  /* ---------- Result ---------- */
+  .result{
+    display:none; margin-top:36px; opacity:0; transform:translateY(10px);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .result.is-visible{display:block; opacity:1; transform:translateY(0);}
+
+  .verdict-banner{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; margin-bottom:16px; box-shadow:0 1px 2px rgba(15,23,42,.03);
+  }
+  .verdict-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .verdict-title{font-family:var(--font-display); font-weight:700; font-size:16px;}
+  .verdict-title .gold{color:var(--gold);}
+  .verdict-time{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2);}
+
+  .tug{
+    position:relative; height:10px; border-radius:99px; overflow:hidden;
+    background:var(--panel-2); border:1px solid var(--border); margin-bottom:8px;
+  }
+  .tug-a, .tug-b{position:absolute; top:0; bottom:0;}
+  .tug-a{left:0; background:var(--a);}
+  .tug-b{right:0; background:var(--b);}
+  .tug-scores{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px;}
+  .tug-scores .a{color:var(--a);}
+  .tug-scores .b{color:var(--b);}
+
+  .cards-grid{display:flex; flex-direction:column; gap:12px; margin-bottom:16px;}
+  .pc-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px; box-shadow:0 1px 2px rgba(15,23,42,.03);
+  }
+  .pc-card.a{border-top:3px solid var(--a);}
+  .pc-card.b{border-top:3px solid var(--b);}
+  .pc-head{font-family:var(--font-display); font-weight:600; font-size:14px; margin-bottom:10px;}
+  .pc-card.a .pc-head{color:var(--a);}
+  .pc-card.b .pc-head{color:var(--b);}
+  .pc-list{list-style:none; margin:0 0 10px; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .pc-list:last-child{margin-bottom:0;}
+  .pc-list li{font-size:13px; color:var(--text); display:flex; gap:8px; align-items:flex-start;}
+  .pc-list .mark{font-family:var(--font-mono); font-size:12px; flex-shrink:0; margin-top:1px;}
+  .pc-list.pros .mark{color:var(--good);}
+  .pc-list.cons .mark{color:var(--muted-2);}
+
+  .metrics{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:6px 16px; margin-bottom:16px; box-shadow:0 1px 2px rgba(15,23,42,.03);
+  }
+  .metrics-title{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; padding:12px 0 4px;}
+  .m-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:10px 0; border-top:1px solid var(--border-soft);}
+  .m-label{font-size:11.5px; color:var(--muted); align-self:center;}
+  .m-val{font-family:var(--font-mono); font-size:12px; color:var(--text); align-self:center; word-break:break-word;}
+  .m-val.a-val{color:var(--a);}
+  .m-val.b-val{color:var(--b);}
+
+  .verdict-panel{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; margin-bottom:16px;
+  }
+  .vp-row{margin-bottom:14px;}
+  .vp-row:last-child{margin-bottom:0;}
+  .vp-label{font-family:var(--font-mono); font-size:10px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:5px;}
+  .vp-text{font-size:13.5px; color:var(--text); line-height:1.55;}
+  .vp-alt-list{display:flex; flex-wrap:wrap; gap:6px;}
+  .vp-alt{font-family:var(--font-mono); font-size:11.5px; color:var(--muted); background:var(--panel); border:1px solid var(--border); border-radius:7px; padding:5px 9px;}
+
+  /* ---------- Recent ---------- */
+  .recent{margin-top:30px;}
+  .recent-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;}
+  .recent-row::-webkit-scrollbar{display:none;}
+  .recent-chip{
+    flex-shrink:0; font-family:var(--font-mono); font-size:11.5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:9px;
+    padding:9px 12px; cursor:pointer; white-space:nowrap; color:var(--muted);
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .recent-chip:hover{color:var(--text); border-color:var(--muted-2);}
+  .recent-chip .a{color:var(--a);}
+  .recent-chip .b{color:var(--b);}
+
+  footer{
+    margin-top:44px; padding-top:20px; border-top:1px solid var(--border-soft);
+    display:flex; flex-direction:column; gap:4px;
+    font-family:var(--font-mono); font-size:11px; color:var(--muted-2);
   }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="shell">
+
   <header>
-    <div class="logo">Open<span>Compare</span></div>
-    <div class="tag">Compare Anything. Decide Smarter.</div>
-    <div class="hero-sub">AI-powered · neutral · instant</div>
+    <div class="brand"><span class="brand-mark">⚡</span> OpenCompare</div>
+    <div class="status-pill"><span class="status-dot"></span> Engine live</div>
   </header>
 
-  <div class="comparator">
-    <div class="vs">
-      <div class="field a">
-        <label class="lbl a">ITEM A</label>
-        <input class="inp" id="a" placeholder="e.g. ChatGPT" autocomplete="off" />
-      </div>
-      <div class="vsbadge">VS</div>
-      <div class="field b">
-        <label class="lbl b">ITEM B</label>
-        <input class="inp" id="b" placeholder="e.g. Claude" autocomplete="off" />
+  <div class="eyebrow">AI comparison engine · neutral · instant</div>
+  <h1>Compare anything.<br><span class="line-b">Decide smarter.</span></h1>
+  <p class="sub">Drop in two items. Get a fact-based verdict, scored and broken down — no marketing spin.</p>
+
+  <form class="duel" id="duelForm" autocomplete="off">
+    <div class="side side--a">
+      <div class="side-label"><span class="side-tag">A</span> Item A</div>
+      <input type="text" id="itemA" placeholder="e.g. ChatGPT" maxlength="60" required>
+    </div>
+
+    <div class="vs-wrap">
+      <div class="vs-line"></div>
+      <div class="vs-badge" id="vsBadge">VS</div>
+      <div class="vs-line"></div>
+    </div>
+
+    <div class="side side--b">
+      <div class="side-label"><span class="side-tag">B</span> Item B</div>
+      <input type="text" id="itemB" placeholder="e.g. Claude" maxlength="60" required>
+    </div>
+
+    <div class="examples">
+      <div class="examples-label">Try an example</div>
+      <div class="chip-row" id="exampleChips">
+        <button type="button" class="chip" data-a="ChatGPT" data-b="Claude">ChatGPT vs Claude</button>
+        <button type="button" class="chip" data-a="Notion" data-b="Obsidian">Notion vs Obsidian</button>
+        <button type="button" class="chip" data-a="iPhone" data-b="Samsung">iPhone vs Samsung</button>
+        <button type="button" class="chip" data-a="Hostinger" data-b="Cloudflare">Hostinger vs Cloudflare</button>
       </div>
     </div>
-    <button class="go" id="btn" onclick="compare()">⚡ Compare Now</button>
-    <div class="chips">
-      Try:
-      <span class="chip" onclick="setEx('ChatGPT','Claude')">ChatGPT vs Claude</span>
-      <span class="chip" onclick="setEx('Notion','Obsidian')">Notion vs Obsidian</span>
-      <span class="chip" onclick="setEx('iPhone','Samsung')">iPhone vs Samsung</span>
-      <span class="chip" onclick="setEx('Hostinger','Cloudflare')">Hostinger vs Cloudflare</span>
+
+    <button type="submit" class="btn-compare" id="runBtn">⚡ Run comparison</button>
+    <div class="error-msg" id="errorMsg">⚠ <span id="errorText">Something went wrong. Try again.</span></div>
+
+    <div class="cats" id="catsWrap" style="display:none;">
+      <div class="cats-inner" id="catsInner"></div>
     </div>
+  </form>
+
+  <section class="result" id="result">
+    <div class="verdict-banner">
+      <div class="verdict-top">
+        <div class="verdict-title" id="verdictTitle">—</div>
+        <div class="verdict-time" id="verdictTime"></div>
+      </div>
+      <div class="tug"><div class="tug-a" id="tugA"></div><div class="tug-b" id="tugB"></div></div>
+      <div class="tug-scores"><span class="a" id="scoreA">0.0</span><span class="b" id="scoreB">0.0</span></div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="pc-card a">
+        <div class="pc-head" id="cardATitle">Item A</div>
+        <ul class="pc-list pros" id="prosA"></ul>
+        <ul class="pc-list cons" id="consA"></ul>
+      </div>
+      <div class="pc-card b">
+        <div class="pc-head" id="cardBTitle">Item B</div>
+        <ul class="pc-list pros" id="prosB"></ul>
+        <ul class="pc-list cons" id="consB"></ul>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metrics-title">Head-to-head metrics</div>
+      <div id="metricsRows"></div>
+    </div>
+
+    <div class="verdict-panel">
+      <div class="vp-row"><div class="vp-label">Best for</div><div class="vp-text" id="bestFor"></div></div>
+      <div class="vp-row"><div class="vp-label">Summary</div><div class="vp-text" id="summary"></div></div>
+      <div class="vp-row"><div class="vp-label">Recommendation</div><div class="vp-text" id="recommendation"></div></div>
+      <div class="vp-row" id="altRow"><div class="vp-label">Alternatives worth a look</div><div class="vp-alt-list" id="altList"></div></div>
+    </div>
+  </section>
+
+  <div class="recent" id="recentWrap" style="display:none;">
+    <div class="examples-label">Recent comparisons</div>
+    <div class="recent-row" id="recentRow"></div>
   </div>
 
-  <div id="out"></div>
-
   <footer>
-    OpenCompare · AI comparison engine<br/>
-    Built with Python + Gemini · Minimalist MVP
+    <div>OpenCompare · AI comparison engine</div>
+    <div>Built with Python + Gemini · Minimalist MVP</div>
   </footer>
+
 </div>
 
 <script>
-  function setEx(a,b){document.getElementById('a').value=a;document.getElementById('b').value=b;}
-  async function compare(){
-    const a=document.getElementById('a').value.trim();
-    const b=document.getElementById('b').value.trim();
-    if(!a||!b){alert('Both items required');return;}
-    const btn=document.getElementById('btn');
-    btn.disabled=true; btn.textContent='Analyzing…';
-    const out=document.getElementById('out');
-    out.innerHTML='<div class="loading"><div class="spin"></div>AI is comparing '+a+' vs '+b+'…</div>';
-    try{
-      const r=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_a:a,item_b:b})});
-      const d=await r.json();
-      if(!d.ok){out.innerHTML='<div class="loading">Error: '+d.error+'</div>';return;}
-      render(d.item);
-    }catch(e){out.innerHTML='<div class="loading">Failed: '+e+'</div>';}
-    finally{btn.disabled=false; btn.textContent='⚡ Compare Now';}
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const form = $('duelForm'), inputA = $('itemA'), inputB = $('itemB');
+  const vsBadge = $('vsBadge'), runBtn = $('runBtn');
+  const errorMsg = $('errorMsg'), errorText = $('errorText');
+  const resultEl = $('result');
+  let allCompares = [];
+
+  function updateBadgeReady(){
+    const ready = inputA.value.trim() && inputB.value.trim();
+    vsBadge.classList.toggle('is-ready', !!ready);
   }
-  function render(item){
-    const a=item.item_a,b=item.item_b,res=item.result;
-    const sa=res.scores.a, sb=res.scores.b;
-    let wcls='tie', wtxt='Tie';
-    if(res.winner==='A'){wcls='a';wtxt=a;}else if(res.winner==='B'){wcls='b';wtxt=b;}
-    const alts=(res.alternatives||[]).map(x=>`<span class="alt">${x}</span>`).join('');
-    document.getElementById('out').innerHTML=`
-      <div class="result">
-        <div class="rtitle"><span class="ra">${a}</span> <span style="color:var(--muted)">vs</span> <span class="rb">${b}</span></div>
-        <div class="scores">
-          <div class="score a"><div class="n">${sa}</div><div class="l">${a} Score</div></div>
-          <div class="score b"><div class="n">${sb}</div><div class="l">${b} Score</div></div>
-        </div>
-        <div class="winner ${wcls}">🏆 Overall Winner: ${wtxt} &nbsp;·&nbsp; ${sa} / ${sb}</div>
+  inputA.addEventListener('input', updateBadgeReady);
+  inputB.addEventListener('input', updateBadgeReady);
 
-        <div class="sec-title">Detailed Comparison</div>
-        <div class="metric-grid">
-          ${(res.metrics||[]).map(x=>`
-            <div class="metric">
-              <div class="mh">${x.label}</div>
-              <div class="mb">
-                <div class="col a"><span class="lab">${a}</span>${x.a}</div>
-                <div class="col b"><span class="lab">${b}</span>${x.b}</div>
-              </div>
-            </div>`).join('')}
-        </div>
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      inputA.value = chip.dataset.a;
+      inputB.value = chip.dataset.b;
+      updateBadgeReady();
+      form.requestSubmit();
+    });
+  });
 
-        <div class="sec-title">Strengths &amp; Weaknesses</div>
-        <div class="pc">
-          <div class="pcol a pros"><h4>✅ ${a} — Pros</h4><ul>${(res.a_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
-          <div class="pcol a cons"><h4>⚠️ ${a} — Cons</h4><ul>${(res.a_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
-        </div>
-        <div class="pc" style="margin-top:14px;">
-          <div class="pcol b pros"><h4>✅ ${b} — Pros</h4><ul>${(res.b_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
-          <div class="pcol b cons"><h4>⚠️ ${b} — Cons</h4><ul>${(res.b_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
-        </div>
+  function clearChildren(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
-        <div class="sec-title">AI Summary</div>
-        <div class="sum">${res.summary}</div>
-
-        <div class="sec-title">Our Recommendation</div>
-        <div class="rec"><div class="rh">💡 Who should choose what</div>${res.recommendation}</div>
-
-        <div class="best">🎯 Best for: ${res.best_for}</div>
-        ${alts?`<div class="alts">${alts}</div>`:''}
-      </div>`;
-    window.scrollTo({top:document.querySelector('.result').offsetTop-20,behavior:'smooth'});
+  function li(mark, text){
+    const el = document.createElement('li');
+    const m = document.createElement('span');
+    m.className = 'mark'; m.textContent = mark;
+    const t = document.createElement('span');
+    t.textContent = text;
+    el.appendChild(m); el.appendChild(t);
+    return el;
   }
+
+  function renderResult(a, b, result, timeLabel){
+    const scoreA = Number(result?.scores?.a ?? 0);
+    const scoreB = Number(result?.scores?.b ?? 0);
+    const total = scoreA + scoreB || 1;
+    const pctA = Math.max(6, (scoreA/total)*100);
+    const pctB = Math.max(6, 100-pctA);
+
+    $('tugA').style.width = pctA + '%';
+    $('tugB').style.width = pctB + '%';
+    $('scoreA').textContent = scoreA.toFixed(1);
+    $('scoreB').textContent = scoreB.toFixed(1);
+
+    let title;
+    if (result?.winner === 'A') title = `🏆 ${a} wins`;
+    else if (result?.winner === 'B') title = `🏆 ${b} wins`;
+    else title = `⚖ Too close to call`;
+    $('verdictTitle').textContent = title;
+    $('verdictTime').textContent = timeLabel || '';
+
+    $('cardATitle').textContent = a;
+    $('cardBTitle').textContent = b;
+
+    const prosA = $('prosA'), consA = $('consA'), prosB = $('prosB'), consB = $('consB');
+    clearChildren(prosA); clearChildren(consA); clearChildren(prosB); clearChildren(consB);
+    (result?.a_pros || []).forEach(x => prosA.appendChild(li('+', x)));
+    (result?.a_cons || []).forEach(x => consA.appendChild(li('–', x)));
+    (result?.b_pros || []).forEach(x => prosB.appendChild(li('+', x)));
+    (result?.b_cons || []).forEach(x => consB.appendChild(li('–', x)));
+
+    const rows = $('metricsRows');
+    clearChildren(rows);
+    (result?.metrics || []).forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'm-row';
+      const label = document.createElement('div'); label.className = 'm-label'; label.textContent = m.label || '';
+      const va = document.createElement('div'); va.className = 'm-val a-val'; va.textContent = m.a || '—';
+      const vb = document.createElement('div'); vb.className = 'm-val b-val'; vb.textContent = m.b || '—';
+      row.appendChild(label); row.appendChild(va); row.appendChild(vb);
+      rows.appendChild(row);
+    });
+
+    $('bestFor').textContent = result?.best_for || '—';
+    $('summary').textContent = result?.summary || '—';
+    $('recommendation').textContent = result?.recommendation || '—';
+
+    const altList = $('altList'), altRow = $('altRow');
+    clearChildren(altList);
+    const alts = result?.alternatives || [];
+    if (alts.length){
+      altRow.style.display = '';
+      alts.forEach(x => {
+        const el = document.createElement('span'); el.className = 'vp-alt'; el.textContent = x;
+        altList.appendChild(el);
+      });
+    } else {
+      altRow.style.display = 'none';
+    }
+
+    resultEl.classList.add('is-visible');
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderRecent(items){
+    const wrap = $('recentWrap'), row = $('recentRow');
+    clearChildren(row);
+    const list = items.slice(-8).reverse();
+    if (!list.length){ wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    list.forEach(item => {
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'recent-chip';
+      const spanA = document.createElement('span'); spanA.className = 'a'; spanA.textContent = item.item_a;
+      const mid = document.createTextNode(' vs ');
+      const spanB = document.createElement('span'); spanB.className = 'b'; spanB.textContent = item.item_b;
+      chip.appendChild(spanA); chip.appendChild(mid); chip.appendChild(spanB);
+      chip.addEventListener('click', () => {
+        inputA.value = item.item_a; inputB.value = item.item_b;
+        updateBadgeReady();
+        renderResult(item.item_a, item.item_b, item.result, item.time);
+      });
+      row.appendChild(chip);
+    });
+  }
+
+  function showError(msg){
+    errorText.textContent = msg;
+    errorMsg.classList.add('is-visible');
+  }
+  function hideError(){ errorMsg.classList.remove('is-visible'); }
+
+  function setLoading(loading){
+    runBtn.disabled = loading;
+    inputA.disabled = loading;
+    inputB.disabled = loading;
+    vsBadge.classList.toggle('is-loading', loading);
+    runBtn.textContent = loading ? 'Comparing…' : '⚡ Run comparison';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const a = inputA.value.trim(), b = inputB.value.trim();
+    if (!a || !b) return;
+    hideError();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_a: a, item_b: b })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Comparison failed.');
+      renderResult(a, b, data.item.result, data.item.time);
+      allCompares.push(data.item);
+      renderRecent(allCompares);
+    } catch (err) {
+      showError(err.message || 'Could not reach the comparison engine. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  async function loadCategories(){
+    try {
+      const res = await fetch('/api/categories');
+      const cats = await res.json();
+      if (Array.isArray(cats) && cats.length){
+        const wrap = $('catsWrap'), inner = $('catsInner');
+        clearChildren(inner);
+        const label = document.createElement('span');
+        label.textContent = 'Popular: ' + cats.join(' · ');
+        inner.appendChild(label);
+        wrap.style.display = '';
+      }
+    } catch (e) { /* non-critical */ }
+  }
+
+  async function loadRecent(){
+    try {
+      const res = await fetch('/api/compare');
+      const items = await res.json();
+      if (Array.isArray(items)){
+        allCompares = items;
+        renderRecent(items);
+      }
+    } catch (e) { /* non-critical */ }
+  }
+
+  loadCategories();
+  loadRecent();
+})();
 </script>
 </body>
 </html>
