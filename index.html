@@ -119,7 +119,7 @@
     const out=document.getElementById('out');
     out.innerHTML='<div class="loading"><div class="spin"></div>AI is comparing '+a+' vs '+b+'…</div>';
     try{
-      const r=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.dumps({item_a:a,item_b:b})});
+      const r=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_a:a,item_b:b})});
       const d=await r.json();
       if(!d.ok){out.innerHTML='<div class="loading">Error: '+d.error+'</div>';return;}
       render(d.item);
