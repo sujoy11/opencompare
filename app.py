@@ -64,12 +64,18 @@ PROMPT = (
 
 def _call_gemini(prompt):
     body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
-    req = urllib.request.Request(
-        GEMINI_URL, data=body, headers={"Content-Type": "application/json"}
-    )
-    with urllib.request.urlopen(req, timeout=30) as r:
-        d = json.load(r)
-        return d["candidates"][0]["content"]["parts"][0]["text"]
+    models = ["gemini-flash-latest", "gemini-1.5-flash", "gemini-pro", "gemini-2.0-flash"]
+    last_err = ""
+    for m in models:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={GEMINI_KEY}"
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                d = json.load(r)
+                return d["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception as e:
+            last_err = f"{type(e).__name__}: {str(e)[:150]}"
+    raise RuntimeError(last_err)
 
 
 def _parse_json(raw):
@@ -154,13 +160,18 @@ class Handler(BaseHTTPRequestHandler):
         elif p.path == "/api/debug":
             net_ok = "unknown"
             try:
-                urllib.request.urlopen(
-                    "https://generativelanguage.googleapis.com/",
-                    timeout=8,
-                )
+                # test actual API endpoint with a dummy key to see if network reaches googleapis
+                test_url = "https://generativelanguage.googleapis.com/v1beta/models?key=test"
+                urllib.request.urlopen(test_url, timeout=8)
                 net_ok = "reachable"
+            except urllib.error.HTTPError as he:
+                # 400/403/404 from googleapis means network IS reachable (just bad key/params)
+                if he.code in (400, 401, 403, 404):
+                    net_ok = "reachable (api responded with %d)" % he.code
+                else:
+                    net_ok = f"FAIL HTTP {he.code}"
             except Exception as ne:
-                net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:120]}"
+                net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:100]}"
             self._send(200, json.dumps({
                 "gemini_key_present": bool(GEMINI_KEY),
                 "gemini_key_len": len(GEMINI_KEY),
