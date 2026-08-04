@@ -134,6 +134,12 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, json.dumps(COMPARES))
         elif p.path == "/api/categories":
             self._send(200, json.dumps(CATEGORIES))
+        elif p.path == "/api/debug":
+            self._send(200, json.dumps({
+                "gemini_key_present": bool(GEMINI_KEY),
+                "gemini_key_len": len(GEMINI_KEY),
+                "port": os.environ.get("PORT", "unset"),
+            }))
         elif p.path == "/health":
             self._send(200, '{"status":"ok"}')
         else:
