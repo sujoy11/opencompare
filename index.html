@@ -6,88 +6,106 @@
 <title>OpenCompare — Compare Anything. Decide Smarter.</title>
 <style>
   :root{
-    --bg:#0a0e17;--bg2:#0f1626;--card:#141d31;--card2:#1a2438;
-    --text:#eef2f9;--muted:#8b9bb4;--border:#243149;
-    --pri:#6366f1;--pri2:#22d3ee;--a:#6366f1;--b:#f59e0b;--green:#34d399;
+    --bg:#070a12;--bg2:#0d1320;--card:#121a2b;--card2:#18233a;
+    --text:#eef2f9;--muted:#8499b5;--border:#223049;
+    --pri:#6366f1;--pri2:#22d3ee;--a:#6366f1;--b:#f59e0b;
+    --green:#34d399;--red:#fb7185;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:1000px;margin:0 auto;padding:0 20px;}
-  header{text-align:center;padding:46px 0 20px;}
-  .logo{font-size:34px;font-weight:800;letter-spacing:-1px;}
+  .wrap{max-width:1030px;margin:0 auto;padding:0 20px;}
+  header{text-align:center;padding:54px 0 10px;position:relative;}
+  .logo{font-size:38px;font-weight:800;letter-spacing:-1.5px;}
   .logo span{background:linear-gradient(135deg,var(--pri),var(--pri2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-  .tag{color:var(--muted);font-size:15px;margin-top:8px;}
-  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;margin:26px 0;}
-  .inp{background:var(--bg2);border:1px solid var(--border);border-radius:13px;color:var(--text);padding:15px;font-size:16px;width:100%;font-family:inherit;}
+  .tag{color:var(--muted);font-size:15px;margin-top:10px;letter-spacing:.2px;}
+  .hero-sub{font-size:13px;color:var(--muted);margin-top:6px;}
+  .comparator{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:26px;margin:30px 0 18px;}
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;}
+  .field{position:relative;}
+  .lbl{font-size:11px;font-weight:800;letter-spacing:1px;margin-bottom:8px;display:block;}
+  .lbl.a{color:var(--a);} .lbl.b{color:var(--b);}
+  .inp{background:var(--bg2);border:1px solid var(--border);border-radius:13px;color:var(--text);padding:16px;font-size:17px;width:100%;font-family:inherit;transition:border-color .15s;}
   .inp:focus{outline:none;border-color:var(--pri);}
-  .vsbadge{font-weight:800;font-size:20px;color:var(--muted);padding-bottom:14px;}
-  .a label{font-size:12px;color:var(--a);font-weight:700;}
-  .b label{font-size:12px;color:var(--b);font-weight:700;}
-  button.go{display:block;width:100%;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:none;padding:15px;border-radius:13px;font-weight:800;font-size:17px;cursor:pointer;margin:6px 0 30px;transition:transform .12s,opacity .2s;}
-  button.go:hover{transform:translateY(-1px);opacity:.95;}
-  .examples{text-align:center;color:var(--muted);font-size:13px;margin-top:-18px;margin-bottom:30px;}
-  .examples span{display:inline-block;background:var(--card);border:1px solid var(--border);padding:5px 12px;border-radius:999px;margin:4px;cursor:pointer;font-size:12px;}
-  .examples span:hover{border-color:var(--pri);color:var(--text);}
-  .result{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:24px;}
-  .rtitle{display:flex;justify-content:center;align-items:center;gap:14px;font-size:20px;font-weight:800;margin-bottom:18px;}
+  .vsbadge{font-weight:900;font-size:22px;color:var(--muted);padding-bottom:16px;letter-spacing:-1px;}
+  .go{display:block;width:100%;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:none;padding:16px;border-radius:14px;font-weight:800;font-size:18px;cursor:pointer;margin-top:18px;transition:transform .12s,opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .go:hover{transform:translateY(-1px);opacity:.95;}
+  .go:disabled{opacity:.6;cursor:wait;}
+  .chips{text-align:center;margin-top:16px;color:var(--muted);font-size:13px;}
+  .chip{display:inline-block;background:var(--bg2);border:1px solid var(--border);padding:6px 13px;border-radius:999px;margin:5px;cursor:pointer;font-size:12px;transition:.15s;}
+  .chip:hover{border-color:var(--pri);color:var(--text);}
+  .result{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:30px;margin-bottom:24px;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .rtitle{font-size:24px;font-weight:800;text-align:center;margin-bottom:22px;}
   .rtitle .ra{color:var(--a);} .rtitle .rb{color:var(--b);}
-  .scores{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
-  .score{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;}
-  .score .n{font-size:34px;font-weight:800;}
+  .scores{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+  .score{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;position:relative;overflow:hidden;}
+  .score .n{font-size:44px;font-weight:800;line-height:1;}
   .score.a .n{color:var(--a);} .score.b .n{color:var(--b);}
-  .score .l{color:var(--muted);font-size:13px;margin-top:4px;}
-  .winner{text-align:center;font-size:15px;font-weight:700;margin:10px 0 20px;padding:10px;background:rgba(99,102,241,.12);border-radius:10px;}
-  table{width:100%;border-collapse:collapse;margin-bottom:18px;}
-  th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:14px;}
-  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
-  td.a{color:var(--a);} td.b{color:var(--b);}
-  .pc{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
-  .pcol{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;}
-  .pcol h4{font-size:13px;margin-bottom:10px;}
+  .score .l{color:var(--muted);font-size:13px;margin-top:8px;}
+  .bar{height:5px;background:var(--bg);border-radius:3px;margin-top:12px;overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:3px;}
+  .score.a .bar i{background:var(--a);} .score.b .bar i{background:var(--b);}
+  .winner{text-align:center;font-size:16px;font-weight:800;padding:14px;border-radius:13px;margin-bottom:22px;}
+  .winner.a{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);}
+  .winner.b{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);}
+  .winner.tie{background:rgba(132,153,181,.1);border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;margin-bottom:22px;}
+  th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:14px;}
+  th{color:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+  td.a{color:var(--a);font-weight:600;} td.b{color:var(--b);font-weight:600;}
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+  .pcol{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:18px;}
+  .pcol h4{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
   .pcol.a h4{color:var(--a);} .pcol.b h4{color:var(--b);}
   .pcol ul{list-style:none;}
-  .pcol li{font-size:13px;padding:4px 0;color:var(--muted);}
-  .pcol li::before{content:"• ";color:var(--green);}
-  .sum{background:var(--bg2);border-left:3px solid var(--pri);border-radius:8px;padding:14px;font-size:14px;line-height:1.6;color:var(--text);}
-  .best{text-align:center;font-size:14px;color:var(--muted);margin-top:14px;font-style:italic;}
-  .loading{text-align:center;padding:40px;color:var(--muted);}
-  .spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--pri);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 14px;}
+  .pcol li{font-size:13px;padding:6px 0;color:var(--text);display:flex;gap:8px;align-items:flex-start;}
+  .pcol li::before{content:"+";color:var(--green);font-weight:800;}
+  .pcol.cons li::before{content:"−";color:var(--red);}
+  .sum{background:var(--bg2);border-left:3px solid var(--pri);border-radius:10px;padding:16px;font-size:14px;line-height:1.7;}
+  .best{text-align:center;font-size:14px;color:var(--muted);margin-top:16px;font-style:italic;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .loading{text-align:center;padding:50px 20px;color:var(--muted);}
+  .spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--pri);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 16px;}
   @keyframes sp{to{transform:rotate(360deg);}}
-  footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 40px;}
-  @media(max-width:680px){.vs{grid-template-columns:1fr;}.vsbadge{text-align:center;}.scores,.pc{grid-template-columns:1fr;}}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 44px;line-height:1.7;}
+  @media(max-width:680px){.vs{grid-template-columns:1fr;}.vsbadge{text-align:center;padding:4px 0;}.scores,.pc{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="logo">Open<span>Compare</span></div>
-    <div class="tag">Compare Anything. Decide Smarter. — powered by AI</div>
+    <div class="tag">Compare Anything. Decide Smarter.</div>
+    <div class="hero-sub">AI-powered · neutral · instant</div>
   </header>
 
-  <div class="vs">
-    <div class="a">
-      <label>ITEM A</label>
-      <input class="inp" id="a" placeholder="e.g. ChatGPT" />
+  <div class="comparator">
+    <div class="vs">
+      <div class="field a">
+        <label class="lbl a">ITEM A</label>
+        <input class="inp" id="a" placeholder="e.g. ChatGPT" autocomplete="off" />
+      </div>
+      <div class="vsbadge">VS</div>
+      <div class="field b">
+        <label class="lbl b">ITEM B</label>
+        <input class="inp" id="b" placeholder="e.g. Claude" autocomplete="off" />
+      </div>
     </div>
-    <div class="vsbadge">VS</div>
-    <div class="b">
-      <label>ITEM B</label>
-      <input class="inp" id="b" placeholder="e.g. Claude" />
+    <button class="go" id="btn" onclick="compare()">⚡ Compare Now</button>
+    <div class="chips">
+      Try:
+      <span class="chip" onclick="setEx('ChatGPT','Claude')">ChatGPT vs Claude</span>
+      <span class="chip" onclick="setEx('Notion','Obsidian')">Notion vs Obsidian</span>
+      <span class="chip" onclick="setEx('iPhone','Samsung')">iPhone vs Samsung</span>
+      <span class="chip" onclick="setEx('Hostinger','Cloudflare')">Hostinger vs Cloudflare</span>
     </div>
-  </div>
-  <button class="go" onclick="compare()">⚡ Compare Now</button>
-
-  <div class="examples">
-    Try:
-    <span onclick="setEx('ChatGPT','Claude')">ChatGPT vs Claude</span>
-    <span onclick="setEx('Notion','Obsidian')">Notion vs Obsidian</span>
-    <span onclick="setEx('iPhone','Samsung')">iPhone vs Samsung</span>
-    <span onclick="setEx('Hostinger','Cloudflare')">Hostinger vs Cloudflare</span>
   </div>
 
   <div id="out"></div>
 
-  <footer>OpenCompare · AI comparison tool · Built with Python + Gemini · Free MVP</footer>
+  <footer>
+    OpenCompare · AI comparison engine<br/>
+    Built with Python + Gemini · Free MVP
+  </footer>
 </div>
 
 <script>
@@ -96,39 +114,43 @@
     const a=document.getElementById('a').value.trim();
     const b=document.getElementById('b').value.trim();
     if(!a||!b){alert('Both items required');return;}
+    const btn=document.getElementById('btn');
+    btn.disabled=true; btn.textContent='Analyzing…';
     const out=document.getElementById('out');
-    out.innerHTML='<div class="loading"><div class="spin"></div>AI is analyzing '+a+' vs '+b+'...</div>';
+    out.innerHTML='<div class="loading"><div class="spin"></div>AI is comparing '+a+' vs '+b+'…</div>';
     try{
-      const r=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_a:a,item_b:b})});
+      const r=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.dumps({item_a:a,item_b:b})});
       const d=await r.json();
       if(!d.ok){out.innerHTML='<div class="loading">Error: '+d.error+'</div>';return;}
       render(d.item);
     }catch(e){out.innerHTML='<div class="loading">Failed: '+e+'</div>';}
+    finally{btn.disabled=false; btn.textContent='⚡ Compare Now';}
   }
   function render(item){
     const a=item.item_a,b=item.item_b,res=item.result;
-    const m=res.metrics||[];
-    const rows=m.map(x=>`<tr><th>${x.name}</th><td class="a">${x.a}</td><td class="b">${x.b}</td></tr>`).join('');
-    const w = res.winner_overall==='A' ? `<span style="color:var(--a)">${a}</span>` : res.winner_overall==='B' ? `<span style="color:var(--b)">${b}</span>` : 'Tie';
+    const sa=res.scores.a, sb=res.scores.b;
+    const m=(res.metrics||[]).map(x=>`<tr><th>${x.label}</th><td class="a">${x.a}</td><td class="b">${x.b}</td></tr>`).join('');
+    let wcls='tie', wtxt='Tie';
+    if(res.winner==='A'){wcls='a';wtxt=a;}else if(res.winner==='B'){wcls='b';wtxt=b;}
     document.getElementById('out').innerHTML=`
       <div class="result">
         <div class="rtitle"><span class="ra">${a}</span> <span style="color:var(--muted)">vs</span> <span class="rb">${b}</span></div>
         <div class="scores">
-          <div class="score a"><div class="n">${res.score_a}</div><div class="l">${a} Score</div></div>
-          <div class="score b"><div class="n">${res.score_b}</div><div class="l">${b} Score</div></div>
+          <div class="score a"><div class="n">${sa}</div><div class="l">${a}</div><div class="bar"><i style="width:${sa*10}%"></i></div></div>
+          <div class="score b"><div class="n">${sb}</div><div class="l">${b}</div><div class="bar"><i style="width:${sb*10}%"></i></div></div>
         </div>
-        <div class="winner">🏆 Overall Winner: ${w} (${res.score_a}/${res.score_b})</div>
+        <div class="winner ${wcls}">🏆 Overall Winner: ${wtxt} &nbsp;(${sa} / ${sb})</div>
         <table>
           <tr><th>Metric</th><th style="color:var(--a)">${a}</th><th style="color:var(--b)">${b}</th></tr>
-          ${rows}
+          ${m}
         </table>
         <div class="pc">
-          <div class="pcol a"><h4>✅ ${a} Pros</h4><ul>${(res.a_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
-          <div class="pcol b"><h4>✅ ${b} Pros</h4><ul>${(res.b_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+          <div class="pcol a"><h4>✅ ${a} — Pros</h4><ul>${(res.a_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+          <div class="pcol a cons"><h4>⚠️ ${a} — Cons</h4><ul>${(res.a_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
         </div>
         <div class="pc">
-          <div class="pcol a"><h4>⚠️ ${a} Cons</h4><ul>${(res.a_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
-          <div class="pcol b"><h4>⚠️ ${b} Cons</h4><ul>${(res.b_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+          <div class="pcol b"><h4>✅ ${b} — Pros</h4><ul>${(res.b_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+          <div class="pcol b cons"><h4>⚠️ ${b} — Cons</h4><ul>${(res.b_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
         </div>
         <div class="sum">${res.summary}</div>
         <div class="best">💡 Best for: ${res.best_for}</div>
