@@ -190,8 +190,8 @@
 
   /* ---------- Categories strip ---------- */
   .cats{margin-top:26px; padding-top:20px; border-top:1px solid var(--border-soft);}
-  .cats-inner{display:flex; flex-wrap:wrap; gap:6px 14px; font-family:var(--font-mono); font-size:11px; color:var(--muted-2);}
-  .cats-inner span{white-space:nowrap;}
+  .cats-inner{display:flex; flex-wrap:wrap; gap:6px 10px; font-family:var(--font-mono); font-size:11px; color:var(--muted-2); line-height:1.6; overflow-wrap:break-word; word-break:break-word;}
+  .cats-inner span{white-space:normal; max-width:100%;}
 
   /* ---------- Result ---------- */
   .result{
@@ -542,8 +542,14 @@
         const wrap = $('catsWrap'), inner = $('catsInner');
         clearChildren(inner);
         const label = document.createElement('span');
-        label.textContent = 'Popular: ' + cats.join(' · ');
+        label.textContent = 'Popular: ';
+        label.style.color = 'var(--muted-2)';
         inner.appendChild(label);
+        cats.forEach((c, i) => {
+          const span = document.createElement('span');
+          span.textContent = c + (i < cats.length - 1 ? ' ·' : '');
+          inner.appendChild(span);
+        });
         wrap.style.display = '';
       }
     } catch (e) { /* non-critical */ }
