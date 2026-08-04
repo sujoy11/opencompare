@@ -56,7 +56,7 @@ PROMPT = (
     '{"label":"Security","a":"...","b":"..."}],'
     '"best_for":"one short phrase",'
     '"summary":"2-3 sentence neutral summary",'
-    '"recommendation":"one actionable sentence for a buyer",'
+    '"recommendation":"3-4 sentence detailed buyer advice: clearly state which to pick for whom and why (mention specific strengths, budget, and use-case)",'
     '"alternatives":["alt1","alt2"]}'
 )
 
