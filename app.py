@@ -22,13 +22,14 @@ if os.path.exists(DATA):
     except Exception:
         COMPARES = []
 
-KEY_FILE = os.path.join(HERE, ".groq_key")
-GROQ_KEY = os.environ.get("GROQ_KEY", "")
+KEY_FILE = os.path.join(HERE, ".hf_key")
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
 LAST_ERROR = ""
-if not GROQ_KEY and os.path.exists(KEY_FILE):
-    GROQ_KEY = open(KEY_FILE).read().strip()
+if not HF_TOKEN and os.path.exists(KEY_FILE):
+    HF_TOKEN = open(KEY_FILE).read().strip()
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions" if GROQ_KEY else ""
+HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+HF_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}" if HF_TOKEN else ""
 
 CATEGORIES = [
     "AI Tools", "Software", "Hosting", "Smartphones", "Laptops",
@@ -59,27 +60,41 @@ PROMPT = (
 )
 
 
-def _call_groq(prompt):
-    """Call Groq (OpenAI-compatible) and return the model's text response."""
+def _call_hf(prompt):
+    """Call HuggingFace serverless Inference API and return generated text."""
+    system = ("You are OpenCompare, a neutral fact-based comparison engine. "
+             "You must reply with ONLY valid JSON, no markdown, no code fences.")
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": prompt},
+    ]
+    # build a simple chat prompt the model understands
+    full = (f"<|begin_of_text|><|system|>\n{system}\n<|user|>\n{prompt}\n"
+            f"<|assistant|>\n")
     body = json.dumps({
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.3,
-        "response_format": {"type": "json_object"},
+        "inputs": full,
+        "parameters": {
+            "max_new_tokens": 900,
+            "temperature": 0.3,
+            "return_full_text": False,
+            "do_sample": True,
+        },
     }).encode()
     req = urllib.request.Request(
-        GROQ_URL, data=body,
+        HF_URL, data=body,
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {GROQ_KEY}",
+            "Authorization": f"Bearer {HF_TOKEN}",
         },
     )
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with urllib.request.urlopen(req, timeout=45) as r:
         d = json.load(r)
-        return d["choices"][0]["message"]["content"]
+        # HF returns a list of {generated_text:...}
+        if isinstance(d, list) and d:
+            return d[0].get("generated_text", "")
+        if isinstance(d, dict):
+            return d.get("generated_text", "")
+        return str(d)
 
 
 def _parse_json(raw):
@@ -105,14 +120,14 @@ CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
 
 
 def compare(a, b):
-    if not GROQ_KEY:
+    if not HF_TOKEN:
         return _fallback(a, b)
     key = f"{a.lower()}|{b.lower()}"
     # cache hit -> no API call (saves quota)
     if key in CACHE:
         return CACHE[key]
     try:
-        result = _parse_json(_call_groq(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
+        result = _parse_json(_call_hf(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
         if "scores" not in result or "winner" not in result:
             raise ValueError("incomplete")
         CACHE[key] = result
@@ -121,7 +136,7 @@ def compare(a, b):
         global LAST_ERROR
         LAST_ERROR = f"{type(e).__name__}: {str(e)[:200]}"
         # 429 = rate limited -> signal so UI can say "try later"
-        if "429" in str(e):
+        if "429" in str(e) or "too many" in str(e).lower():
             return {"_rate_limited": True, "a": a, "b": b}
         return _fallback(a, b)
 
@@ -174,12 +189,11 @@ class Handler(BaseHTTPRequestHandler):
         elif p.path == "/api/debug":
             net_ok = "unknown"
             try:
-                # test actual API endpoint with a dummy key to see if network reaches googleapis
-                test_url = "https://generativelanguage.googleapis.com/v1beta/models?key=test"
+                # test HF endpoint reachability
+                test_url = "https://api-inference.huggingface.co/models/" + HF_MODEL
                 urllib.request.urlopen(test_url, timeout=8)
                 net_ok = "reachable"
             except urllib.error.HTTPError as he:
-                # 400/403/404 from googleapis means network IS reachable (just bad key/params)
                 if he.code in (400, 401, 403, 404):
                     net_ok = "reachable (api responded with %d)" % he.code
                 else:
@@ -187,10 +201,11 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as ne:
                 net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:100]}"
             self._send(200, json.dumps({
-                "groq_key_present": bool(GROQ_KEY),
-                "groq_key_len": len(GROQ_KEY),
+                "hf_token_present": bool(HF_TOKEN),
+                "hf_token_len": len(HF_TOKEN),
+                "hf_model": HF_MODEL,
                 "port": os.environ.get("PORT", "unset"),
-                "network_to_groq": net_ok,
+                "network_to_hf": net_ok,
                 "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
