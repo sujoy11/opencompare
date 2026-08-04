@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenCompare — Compare Anything. Decide Smarter.</title>
+<style>
+  :root{
+    --bg:#0a0e17;--bg2:#0f1626;--card:#141d31;--card2:#1a2438;
+    --text:#eef2f9;--muted:#8b9bb4;--border:#243149;
+    --pri:#6366f1;--pri2:#22d3ee;--a:#6366f1;--b:#f59e0b;--green:#34d399;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px;}
+  header{text-align:center;padding:46px 0 20px;}
+  .logo{font-size:34px;font-weight:800;letter-spacing:-1px;}
+  .logo span{background:linear-gradient(135deg,var(--pri),var(--pri2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .tag{color:var(--muted);font-size:15px;margin-top:8px;}
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;margin:26px 0;}
+  .inp{background:var(--bg2);border:1px solid var(--border);border-radius:13px;color:var(--text);padding:15px;font-size:16px;width:100%;font-family:inherit;}
+  .inp:focus{outline:none;border-color:var(--pri);}
+  .vsbadge{font-weight:800;font-size:20px;color:var(--muted);padding-bottom:14px;}
+  .a label{font-size:12px;color:var(--a);font-weight:700;}
+  .b label{font-size:12px;color:var(--b);font-weight:700;}
+  button.go{display:block;width:100%;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:none;padding:15px;border-radius:13px;font-weight:800;font-size:17px;cursor:pointer;margin:6px 0 30px;transition:transform .12s,opacity .2s;}
+  button.go:hover{transform:translateY(-1px);opacity:.95;}
+  .examples{text-align:center;color:var(--muted);font-size:13px;margin-top:-18px;margin-bottom:30px;}
+  .examples span{display:inline-block;background:var(--card);border:1px solid var(--border);padding:5px 12px;border-radius:999px;margin:4px;cursor:pointer;font-size:12px;}
+  .examples span:hover{border-color:var(--pri);color:var(--text);}
+  .result{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:24px;}
+  .rtitle{display:flex;justify-content:center;align-items:center;gap:14px;font-size:20px;font-weight:800;margin-bottom:18px;}
+  .rtitle .ra{color:var(--a);} .rtitle .rb{color:var(--b);}
+  .scores{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+  .score{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;}
+  .score .n{font-size:34px;font-weight:800;}
+  .score.a .n{color:var(--a);} .score.b .n{color:var(--b);}
+  .score .l{color:var(--muted);font-size:13px;margin-top:4px;}
+  .winner{text-align:center;font-size:15px;font-weight:700;margin:10px 0 20px;padding:10px;background:rgba(99,102,241,.12);border-radius:10px;}
+  table{width:100%;border-collapse:collapse;margin-bottom:18px;}
+  th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:14px;}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
+  td.a{color:var(--a);} td.b{color:var(--b);}
+  .pc{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+  .pcol{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;}
+  .pcol h4{font-size:13px;margin-bottom:10px;}
+  .pcol.a h4{color:var(--a);} .pcol.b h4{color:var(--b);}
+  .pcol ul{list-style:none;}
+  .pcol li{font-size:13px;padding:4px 0;color:var(--muted);}
+  .pcol li::before{content:"• ";color:var(--green);}
+  .sum{background:var(--bg2);border-left:3px solid var(--pri);border-radius:8px;padding:14px;font-size:14px;line-height:1.6;color:var(--text);}
+  .best{text-align:center;font-size:14px;color:var(--muted);margin-top:14px;font-style:italic;}
+  .loading{text-align:center;padding:40px;color:var(--muted);}
+  .spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--pri);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 14px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 40px;}
+  @media(max-width:680px){.vs{grid-template-columns:1fr;}.vsbadge{text-align:center;}.scores,.pc{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">Open<span>Compare</span></div>
+    <div class="tag">Compare Anything. Decide Smarter. — powered by AI</div>
+  </header>
+
+  <div class="vs">
+    <div class="a">
+      <label>ITEM A</label>
+      <input class="inp" id="a" placeholder="e.g. ChatGPT" />
+    </div>
+    <div class="vsbadge">VS</div>
+    <div class="b">
+      <label>ITEM B</label>
+      <input class="inp" id="b" placeholder="e.g. Claude" />
+    </div>
+  </div>
+  <button class="go" onclick="compare()">⚡ Compare Now</button>
+
+  <div class="examples">
+    Try:
+    <span onclick="setEx('ChatGPT','Claude')">ChatGPT vs Claude</span>
+    <span onclick="setEx('Notion','Obsidian')">Notion vs Obsidian</span>
+    <span onclick="setEx('iPhone','Samsung')">iPhone vs Samsung</span>
+    <span onclick="setEx('Hostinger','Cloudflare')">Hostinger vs Cloudflare</span>
+  </div>
+
+  <div id="out"></div>
+
+  <footer>OpenCompare · AI comparison tool · Built with Python + Gemini · Free MVP</footer>
+</div>
+
+<script>
+  function setEx(a,b){document.getElementById('a').value=a;document.getElementById('b').value=b;}
+  async function compare(){
+    const a=document.getElementById('a').value.trim();
+    const b=document.getElementById('b').value.trim();
+    if(!a||!b){alert('Both items required');return;}
+    const out=document.getElementById('out');
+    out.innerHTML='<div class="loading"><div class="spin"></div>AI is analyzing '+a+' vs '+b+'...</div>';
+    try{
+      const r=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_a:a,item_b:b})});
+      const d=await r.json();
+      if(!d.ok){out.innerHTML='<div class="loading">Error: '+d.error+'</div>';return;}
+      render(d.item);
+    }catch(e){out.innerHTML='<div class="loading">Failed: '+e+'</div>';}
+  }
+  function render(item){
+    const a=item.item_a,b=item.item_b,res=item.result;
+    const m=res.metrics||[];
+    const rows=m.map(x=>`<tr><th>${x.name}</th><td class="a">${x.a}</td><td class="b">${x.b}</td></tr>`).join('');
+    const w = res.winner_overall==='A' ? `<span style="color:var(--a)">${a}</span>` : res.winner_overall==='B' ? `<span style="color:var(--b)">${b}</span>` : 'Tie';
+    document.getElementById('out').innerHTML=`
+      <div class="result">
+        <div class="rtitle"><span class="ra">${a}</span> <span style="color:var(--muted)">vs</span> <span class="rb">${b}</span></div>
+        <div class="scores">
+          <div class="score a"><div class="n">${res.score_a}</div><div class="l">${a} Score</div></div>
+          <div class="score b"><div class="n">${res.score_b}</div><div class="l">${b} Score</div></div>
+        </div>
+        <div class="winner">🏆 Overall Winner: ${w} (${res.score_a}/${res.score_b})</div>
+        <table>
+          <tr><th>Metric</th><th style="color:var(--a)">${a}</th><th style="color:var(--b)">${b}</th></tr>
+          ${rows}
+        </table>
+        <div class="pc">
+          <div class="pcol a"><h4>✅ ${a} Pros</h4><ul>${(res.a_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+          <div class="pcol b"><h4>✅ ${b} Pros</h4><ul>${(res.b_pros||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+        </div>
+        <div class="pc">
+          <div class="pcol a"><h4>⚠️ ${a} Cons</h4><ul>${(res.a_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+          <div class="pcol b"><h4>⚠️ ${b} Cons</h4><ul>${(res.b_cons||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+        </div>
+        <div class="sum">${res.summary}</div>
+        <div class="best">💡 Best for: ${res.best_for}</div>
+      </div>`;
+  }
+</script>
+</body>
+</html>
