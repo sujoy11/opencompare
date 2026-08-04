@@ -24,6 +24,7 @@ if os.path.exists(DATA):
 
 KEY_FILE = os.path.join(HERE, ".gemini_key")
 GEMINI_KEY = os.environ.get("GEMINI_KEY", "")
+LAST_ERROR = ""
 if not GEMINI_KEY and os.path.exists(KEY_FILE):
     GEMINI_KEY = open(KEY_FILE).read().strip()
 
@@ -66,17 +67,27 @@ def _call_gemini(prompt):
     req = urllib.request.Request(
         GEMINI_URL, data=body, headers={"Content-Type": "application/json"}
     )
-    with urllib.request.urlopen(req, timeout=25) as r:
+    with urllib.request.urlopen(req, timeout=30) as r:
         d = json.load(r)
         return d["candidates"][0]["content"]["parts"][0]["text"]
 
 
 def _parse_json(raw):
     raw = raw.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```", 2)[1]
+    # strip markdown fences
+    if "```" in raw:
+        # grab content between first ``` and closing ```
+        start = raw.find("```")
+        end = raw.find("```", start + 3)
+        if end != -1:
+            raw = raw[start + 3:end]
         if raw.startswith("json"):
             raw = raw[4:]
+    # extract first {...} block
+    s = raw.find("{")
+    e = raw.rfind("}")
+    if s != -1 and e != -1:
+        raw = raw[s:e + 1]
     return json.loads(raw.strip())
 
 
@@ -84,8 +95,14 @@ def compare(a, b):
     if not GEMINI_KEY:
         return _fallback(a, b)
     try:
-        return _parse_json(_call_gemini(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
-    except Exception:
+        result = _parse_json(_call_gemini(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
+        # validate required keys
+        if "scores" not in result or "winner" not in result:
+            raise ValueError("incomplete")
+        return result
+    except Exception as e:
+        global LAST_ERROR
+        LAST_ERROR = f"{type(e).__name__}: {str(e)[:200]}"
         return _fallback(a, b)
 
 
@@ -139,6 +156,7 @@ class Handler(BaseHTTPRequestHandler):
                 "gemini_key_present": bool(GEMINI_KEY),
                 "gemini_key_len": len(GEMINI_KEY),
                 "port": os.environ.get("PORT", "unset"),
+                "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
             self._send(200, '{"status":"ok"}')
