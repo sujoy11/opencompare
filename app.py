@@ -106,28 +106,33 @@ def _parse_json(raw):
         return json.loads(raw)
     except json.JSONDecodeError:
         import re
-        # 1. trailing commas before } or ]
-        cleaned = re.sub(r",\s*([}\]])", r"\1", raw)
-        # 1b. missing colon after key: "key"[ or "key"{  ->  "key":[ / "key":{
+        # 1. stray backslashes before quotes/apostrophes (Mistral escapes ' -> \')
+        cleaned = raw.replace("\\'", "'").replace('\\"', '"')
+        # 2. trailing commas before } or ]
+        cleaned = re.sub(r",\s*([}\]])", r"\1", cleaned)
+        # 3. missing colon after key: "key"[ or "key"{  ->  "key":[ / "key":{
         cleaned = re.sub(r'("(?:winner|scores|a_pros|a_cons|b_pros|b_cons|metrics|best_for|summary|recommendation|alternatives|label|a|b)")\s*\[', r'\1:[', cleaned)
         cleaned = re.sub(r'("(?:winner|scores|a_pros|a_cons|b_pros|b_cons|metrics|best_for|summary|recommendation|alternatives|label|a|b)")\s*\{', r'\1:{', cleaned)
         try:
-            return json.loads(cleaned)
+            d = json.loads(cleaned)
         except json.JSONDecodeError:
-            pass
-        # 2. unbalanced brackets — try to close them
-        try:
+            # 4. unbalanced brackets — try to close them
             depth = {"{": 0, "[": 0}
             for ch in cleaned:
                 if ch == "{": depth["{"] += 1
                 elif ch == "}": depth["{"] = max(0, depth["{"] - 1)
                 elif ch == "[": depth["["] += 1
                 elif ch == "]": depth["["] = max(0, depth["["] - 1)
-            fixed = cleaned
-            fixed += "]" * depth["["] + "}" * depth["{"]
-            return json.loads(fixed)
-        except json.JSONDecodeError:
-            raise
+            fixed = cleaned + "]" * depth["["] + "}" * depth["{"]
+            d = json.loads(fixed)
+        # 5. normalize scores: model may use item names instead of a/b
+        if isinstance(d, dict) and "scores" in d and isinstance(d["scores"], dict):
+            sc = d["scores"]
+            if "a" not in sc or "b" not in sc:
+                vals = list(sc.values())
+                if len(vals) >= 2:
+                    d["scores"] = {"a": vals[0], "b": vals[1]}
+        return d
 
 
 CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
