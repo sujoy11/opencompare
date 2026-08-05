@@ -149,13 +149,22 @@
     transition:color .2s ease, border-color .2s ease, transform .2s ease;
   }
   .vs-badge.is-ready{color:var(--text); border-color:var(--border); box-shadow:0 0 0 1px var(--border), 0 0 24px -6px rgba(79,70,229,0.35), 0 0 24px -6px rgba(5,150,105,0.25);}
-  .vs-badge.is-loading{animation:spin 0.9s linear infinite; color:transparent;}
-  .vs-badge.is-loading::after{
-    content:""; position:absolute; inset:3px; border-radius:50%;
-    border:2px solid var(--border); border-top-color:var(--a); border-right-color:var(--b);
+  .vs-badge.is-loading{color:transparent;}
+  .vs-badge.is-loading::before{
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(from 0deg, var(--a), var(--b), var(--a));
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+            mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    animation:vs-spin 0.9s linear infinite;
   }
-  @keyframes spin{to{transform:rotate(360deg);}}
-  @media (prefers-reduced-motion: reduce){ .vs-badge.is-loading{animation:none;} }
+  .vs-badge.is-loading::after{
+    content:""; position:absolute; inset:7px; border-radius:50%;
+    border:2px solid transparent; border-top-color:var(--a-soft); border-bottom-color:var(--b-soft);
+    animation:vs-spin 1.4s cubic-bezier(.6,.1,.4,.9) infinite reverse;
+    opacity:.9;
+  }
+  @keyframes vs-spin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .vs-badge.is-loading::before, .vs-badge.is-loading::after{animation:none;} }
 
   /* ---------- Examples ---------- */
   .examples{margin:14px 0 16px;}
@@ -321,7 +330,7 @@
       </div>
     </div>
 
-    <button type="submit" class="btn-compare" id="runBtn">⚡ Run comparison</button>
+    <button type="submit" class="btn-compare" id="runBtn">Run comparison</button>
     <div class="error-msg" id="errorMsg">⚠ <span id="errorText">Something went wrong. Try again.</span></div>
 
     <div class="cats" id="catsWrap" style="display:none;">
@@ -511,7 +520,7 @@
     inputA.disabled = loading;
     inputB.disabled = loading;
     vsBadge.classList.toggle('is-loading', loading);
-    runBtn.textContent = loading ? 'Comparing… (≈30s)' : '⚡ Run comparison';
+    runBtn.textContent = loading ? 'Comparing…' : 'Run comparison';
   }
 
   form.addEventListener('submit', async (e) => {
