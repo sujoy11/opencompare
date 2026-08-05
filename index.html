@@ -276,14 +276,14 @@
   .recent{margin-top:30px;}
   .recent-row{display:flex; flex-wrap:wrap; gap:8px; padding-bottom:4px;}
   .recent-chip{
-    font-family:var(--font-mono); font-size:11.5px;
+    flex:0 0 auto; max-width:48%;
+    font-family:var(--font-mono); font-size:11.5px; color:var(--muted);
     background:var(--panel); border:1px solid var(--border); border-radius:9px;
-    padding:9px 12px; cursor:pointer; color:var(--muted);
-    transition:border-color .15s ease, color .15s ease;
+    padding:9px 12px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
   }
   .recent-chip:hover{color:var(--text); border-color:var(--muted-2);}
-  .recent-chip .a{color:var(--a);}
-  .recent-chip .b{color:var(--b);}
+  .recent-chip .a{color:var(--a); font-weight:600;}
+  .recent-chip .b{color:var(--b); font-weight:600;}
 
   footer{
     margin-top:44px; padding-top:20px; border-top:1px solid var(--border-soft);
