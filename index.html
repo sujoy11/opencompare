@@ -511,7 +511,7 @@
     inputA.disabled = loading;
     inputB.disabled = loading;
     vsBadge.classList.toggle('is-loading', loading);
-    runBtn.textContent = loading ? 'Comparing…' : '⚡ Run comparison';
+    runBtn.textContent = loading ? 'Comparing… (≈30s)' : '⚡ Run comparison';
   }
 
   form.addEventListener('submit', async (e) => {
