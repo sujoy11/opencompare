@@ -76,7 +76,7 @@ def _call_or(prompt):
                 {"role": "user", "content": prompt},
             ],
             "temperature": 0.3,
-            "max_tokens": 500,
+            "max_tokens": 900,
         }).encode()
         req = urllib.request.Request(
             OR_URL, data=body,
