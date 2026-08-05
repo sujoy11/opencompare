@@ -22,14 +22,19 @@ if os.path.exists(DATA):
     except Exception:
         COMPARES = []
 
-KEY_FILE = os.path.join(HERE, ".hf_key")
-HF_TOKEN = os.environ.get("HF_TOKEN", "")
+KEY_FILE = os.path.join(HERE, ".or_key")
+OR_KEY = os.environ.get("OPENROUTER_KEY", "")
 LAST_ERROR = ""
-if not HF_TOKEN and os.path.exists(KEY_FILE):
-    HF_TOKEN = open(KEY_FILE).read().strip()
+if not OR_KEY and os.path.exists(KEY_FILE):
+    OR_KEY = open(KEY_FILE).read().strip()
 
-HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
-HF_URL = f"https://router.huggingface.co/v1/chat/completions" if HF_TOKEN else ""
+OR_URL = "https://openrouter.ai/api/v1/chat/completions" if OR_KEY else ""
+# free models (no billing), fast + good quality
+OR_MODELS = [
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "ling-3.0-flash:free",
+    "google/gemma-4-26b-a4b-it:free",
+]
 
 CATEGORIES = [
     "AI Tools", "Software", "Hosting", "Smartphones", "Laptops",
@@ -60,27 +65,33 @@ PROMPT = (
 )
 
 
-def _call_hf(prompt):
-    """Call HuggingFace router (OpenAI-compatible) and return model text."""
-    body = json.dumps({
-        "model": HF_MODEL,
-        "messages": [
-            {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.3,
-        "max_tokens": 350,
-    }).encode()
-    req = urllib.request.Request(
-        HF_URL, data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {HF_TOKEN}",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=90) as r:
-        d = json.load(r)
-        return d["choices"][0]["message"]["content"]
+def _call_or(prompt):
+    """Call OpenRouter (OpenAI-compatible) with free models, fallback chain."""
+    last_err = ""
+    for model in OR_MODELS:
+        body = json.dumps({
+            "model": model,
+            "messages": [
+                {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.3,
+            "max_tokens": 500,
+        }).encode()
+        req = urllib.request.Request(
+            OR_URL, data=body,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {OR_KEY}",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=40) as r:
+                d = json.load(r)
+                return d["choices"][0]["message"]["content"]
+        except Exception as e:
+            last_err = f"{type(e).__name__}: {str(e)[:150]}"
+    raise RuntimeError(last_err)
 
 
 def _parse_json(raw):
@@ -106,14 +117,14 @@ CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
 
 
 def compare(a, b):
-    if not HF_TOKEN:
+    if not OR_KEY:
         return _fallback(a, b)
     key = f"{a.lower()}|{b.lower()}"
     # cache hit -> no API call (saves quota)
     if key in CACHE:
         return CACHE[key]
     try:
-        result = _parse_json(_call_hf(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
+        result = _parse_json(_call_or(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
         if "scores" not in result or "winner" not in result:
             raise ValueError("incomplete")
         CACHE[key] = result
@@ -122,7 +133,7 @@ def compare(a, b):
         global LAST_ERROR
         LAST_ERROR = f"{type(e).__name__}: {str(e)[:200]}"
         # 429 = rate limited -> signal so UI can say "try later"
-        if "429" in str(e) or "too many" in str(e).lower():
+        if "429" in str(e) or "too many" in str(e).lower() or "rate" in str(e).lower():
             return {"_rate_limited": True, "a": a, "b": b}
         return _fallback(a, b)
 
@@ -176,7 +187,7 @@ class Handler(BaseHTTPRequestHandler):
             net_ok = "unknown"
             try:
                 # test HF endpoint reachability
-                test_url = "https://api-inference.huggingface.co/models/" + HF_MODEL
+                test_url = "https://openrouter.ai/api/v1/models"
                 urllib.request.urlopen(test_url, timeout=8)
                 net_ok = "reachable"
             except urllib.error.HTTPError as he:
@@ -187,11 +198,11 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as ne:
                 net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:100]}"
             self._send(200, json.dumps({
-                "hf_token_present": bool(HF_TOKEN),
-                "hf_token_len": len(HF_TOKEN),
-                "hf_model": HF_MODEL,
+                "or_key_present": bool(OR_KEY),
+                "or_key_len": len(OR_KEY),
+                "or_models": OR_MODELS,
                 "port": os.environ.get("PORT", "unset"),
-                "network_to_hf": net_ok,
+                "network_to_or": net_ok,
                 "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
