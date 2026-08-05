@@ -62,6 +62,8 @@ PROMPT = (
     '"summary":"2-3 sentence neutral summary",'
     '"recommendation":"3-4 sentence detailed buyer advice: clearly state which to pick for whom and why (mention specific strengths, budget, and use-case)",'
     '"alternatives":["alt1","alt2"]}'
+    '\n\nEXAMPLE of exact format you must follow:\n'
+    '{"winner":"Tie","scores":{"a":7.5,"b":7.5},"a_pros":["p1","p2","p3"],"a_cons":["c1","c2","c3"],"b_pros":["p1","p2","p3"],"b_cons":["c1","c2","c3"],"metrics":[{"label":"Price","a":"$999","b":"$899"},{"label":"Key Features","a":"x","b":"y"},{"label":"Performance","a":"x","b":"y"},{"label":"Ease of Use","a":"x","b":"y"},{"label":"Supported Platforms","a":"x","b":"y"},{"label":"Integrations","a":"x","b":"y"},{"label":"Security","a":"x","b":"y"}],"best_for":"phrase","summary":"2-3 sentences","recommendation":"3-4 sentences","alternatives":["alt1","alt2"]}'
 )
 
 
@@ -98,10 +100,11 @@ def _parse_json(raw):
     raw = raw.strip()
     # strip markdown fences
     if "```" in raw:
-        start = raw.find("```")
-        end = raw.find("```", start + 3)
-        if end != -1:
-            raw = raw[start + 3:end]
+        # keep only the first fenced block
+        parts = raw.split("```")
+        # parts[0] is before first fence, parts[1] is inside (may have "json" prefix)
+        if len(parts) >= 2:
+            raw = parts[1]
         if raw.startswith("json"):
             raw = raw[4:]
     # extract first {...} block
