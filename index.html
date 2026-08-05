@@ -177,6 +177,8 @@
   }
   .chip:hover{color:var(--text); border-color:var(--muted-2);}
   .chip:active{transform:scale(0.97);}
+  .chip .a{color:var(--a); font-weight:600;}
+  .chip .b{color:var(--b); font-weight:600;}
 
   /* ---------- Button ---------- */
   .btn-compare{
@@ -408,6 +410,13 @@
       updateBadgeReady();
       form.requestSubmit();
     });
+    // color A (purple) and B (green) parts like recent chips
+    const a = chip.dataset.a || '', b = chip.dataset.b || '';
+    chip.innerHTML = '';
+    const sa = document.createElement('span'); sa.className = 'a'; sa.textContent = a;
+    const mid = document.createTextNode(' vs ');
+    const sb = document.createElement('span'); sb.className = 'b'; sb.textContent = b;
+    chip.appendChild(sa); chip.appendChild(mid); chip.appendChild(sb);
   });
 
   function clearChildren(el){ while(el.firstChild) el.removeChild(el.firstChild); }
