@@ -43,18 +43,18 @@ PROMPT = (
     "Return ONLY valid JSON (no markdown, no code fences): "
     '{"winner":"A|B|Tie",'
     '"scores":{"a":7.5,"b":7.5},'
-    '"a_pros":[3 short strings],"a_cons":[3 short strings],'
-    '"b_pros":[3 short strings],"b_cons":[3 short strings],'
+    '"a_pros":[3 detailed points, each a full sentence with specifics],"a_cons":[3 detailed points, each a full sentence],'
+    '"b_pros":[3 detailed points, each a full sentence with specifics],"b_cons":[3 detailed points, each a full sentence],'
     '"metrics":['
-    '{"label":"Price","a":"...","b":"..."},'
-    '{"label":"Key Features","a":"...","b":"..."},'
-    '{"label":"Performance","a":"...","b":"..."},'
-    '{"label":"Ease of Use","a":"...","b":"..."},'
-    '{"label":"Supported Platforms","a":"...","b":"..."},'
-    '{"label":"Integrations","a":"...","b":"..."},'
-    '{"label":"Security","a":"...","b":"..."}],'
-    '"best_for":"one short phrase",'
-    '"summary":"2-3 sentence neutral summary",'
+    '{"label":"Price","a":"detailed value e.g. $999 starting, varies by config","b":"detailed value"},'
+    '{"label":"Key Features","a":"detailed description","b":"detailed description"},'
+    '{"label":"Performance","a":"detailed assessment","b":"detailed assessment"},'
+    '{"label":"Ease of Use","a":"detailed assessment","b":"detailed assessment"},'
+    '{"label":"Supported Platforms","a":"detailed answer","b":"detailed answer"},'
+    '{"label":"Integrations","a":"detailed answer","b":"detailed answer"},'
+    '{"label":"Security","a":"detailed answer","b":"detailed answer"}],'
+    '"best_for":"one detailed phrase explaining ideal user",'
+    '"summary":"3-4 sentence detailed neutral summary covering key differences",'
     '"recommendation":"3-4 sentence detailed buyer advice: clearly state which to pick for whom and why (mention specific strengths, budget, and use-case)",'
     '"alternatives":["alt1","alt2"]}'
     '\n\nEXAMPLE of exact format you must follow:\n'
@@ -71,7 +71,7 @@ def _call_mistral(prompt):
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.3,
-        "max_tokens": 900,
+        "max_tokens": 1500,
     }).encode()
     req = urllib.request.Request(
         MISTRAL_URL, data=body,
