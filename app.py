@@ -42,7 +42,7 @@ PROMPT = (
     "Compare the two items thoroughly and fairly. "
     "Return ONLY valid JSON (no markdown, no code fences): "
     '{"winner":"A|B|Tie",'
-    '"scores":{"a":<0-10>,"b":<0-10>},'
+    '"scores":{"a":7.5,"b":7.5},'
     '"a_pros":[3 short strings],"a_cons":[3 short strings],'
     '"b_pros":[3 short strings],"b_cons":[3 short strings],'
     '"metrics":['
