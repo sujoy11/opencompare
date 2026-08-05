@@ -98,7 +98,6 @@ def _parse_json(raw):
     raw = raw.strip()
     # strip markdown fences
     if "```" in raw:
-        # grab content between first ``` and closing ```
         start = raw.find("```")
         end = raw.find("```", start + 3)
         if end != -1:
@@ -110,7 +109,18 @@ def _parse_json(raw):
     e = raw.rfind("}")
     if s != -1 and e != -1:
         raw = raw[s:e + 1]
-    return json.loads(raw.strip())
+    raw = raw.strip()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # repair common LLM JSON mistakes: trailing commas, etc.
+        import re
+        cleaned = re.sub(r",\s*([}\]])", r"\1", raw)  # trailing commas
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            # last resort: try to fix single->double quotes on keys already double
+            raise
 
 
 CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
