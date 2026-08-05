@@ -169,10 +169,11 @@
   .examples{margin:14px 0 16px;}
   .examples-label{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;}
   .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip{flex:0 0 auto; max-width:48%;
+  .chip{flex:0 0 auto; max-width:47%;
     font-family:var(--font-mono); font-size:10.5px; color:var(--muted);
     background:var(--panel); border:1px solid var(--border); border-radius:9px;
     padding:9px 12px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .chip:hover{color:var(--text); border-color:var(--muted-2);}
   .chip:active{transform:scale(0.97);}
@@ -275,10 +276,11 @@
   .recent{margin-top:30px;}
   .recent-row{display:flex; flex-wrap:wrap; gap:8px; padding-bottom:4px;}
   .recent-chip{
-    flex:0 0 auto; max-width:48%;
+    flex:0 0 auto; max-width:47%;
     font-family:var(--font-mono); font-size:10.5px; color:var(--muted);
     background:var(--panel); border:1px solid var(--border); border-radius:9px;
     padding:9px 12px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .recent-chip:hover{color:var(--text); border-color:var(--muted-2);}
   .recent-chip .a{color:var(--a); font-weight:600;}
