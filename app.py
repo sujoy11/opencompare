@@ -71,7 +71,7 @@ def _call_mistral(prompt):
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.3,
-        "max_tokens": 1500,
+        "max_tokens": 800,
     }).encode()
     req = urllib.request.Request(
         MISTRAL_URL, data=body,
