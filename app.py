@@ -116,6 +116,9 @@ def _parse_json(raw):
         import re
         # 1. trailing commas before } or ]
         cleaned = re.sub(r",\s*([}\]])", r"\1", raw)
+        # 1b. missing colon after key: "key"[ or "key"{  ->  "key":[ / "key":{
+        cleaned = re.sub(r'("(?:winner|scores|a_pros|a_cons|b_pros|b_cons|metrics|best_for|summary|recommendation|alternatives|label|a|b)")\s*\[', r'\1:[', cleaned)
+        cleaned = re.sub(r'("(?:winner|scores|a_pros|a_cons|b_pros|b_cons|metrics|best_for|summary|recommendation|alternatives|label|a|b)")\s*\{', r'\1:{', cleaned)
         try:
             return json.loads(cleaned)
         except json.JSONDecodeError:
