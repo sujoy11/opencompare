@@ -29,11 +29,11 @@ if not OR_KEY and os.path.exists(KEY_FILE):
     OR_KEY = open(KEY_FILE).read().strip()
 
 OR_URL = "https://openrouter.ai/api/v1/chat/completions" if OR_KEY else ""
-# free models (no billing), fast + good quality
+# free models (no billing), fast + good quality. gemma-4-26b follows JSON best.
 OR_MODELS = [
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-    "ling-3.0-flash:free",
     "google/gemma-4-26b-a4b-it:free",
+    "ling-3.0-flash:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
 ]
 
 CATEGORIES = [
