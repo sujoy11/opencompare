@@ -143,6 +143,14 @@ def _parse_json(raw):
 
 CACHE = {}  # key: "a|b" -> result dict (in-memory cache)
 
+# Preload past comparisons into CACHE so popular pairs are instant on cold start
+for _item in COMPARES:
+    _a = (_item.get("item_a") or "").lower()
+    _b = (_item.get("item_b") or "").lower()
+    _r = _item.get("result")
+    if _a and _b and _r:
+        CACHE[f"{_a}|{_b}"] = _r
+
 
 def compare(a, b):
     if not OR_KEY:
