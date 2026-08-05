@@ -272,27 +272,16 @@
 
   /* ---------- Recent ---------- */
   .recent{margin-top:30px;}
-  .recent-label{
-    font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2);
-    text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px;
-    display:flex; align-items:center; gap:6px;
-  }
-  .recent-label::before{
-    content:""; width:6px; height:6px; border-radius:50%;
-    background:linear-gradient(90deg, var(--a), var(--b));
-  }
   .recent-row{display:flex; flex-wrap:wrap; gap:8px; padding-bottom:4px;}
   .recent-chip{
-    font-family:var(--font-mono); font-size:12px; font-weight:500;
-    background:var(--panel); border:1px solid var(--border); border-radius:10px;
-    padding:9px 13px; cursor:pointer; color:var(--muted);
-    display:inline-flex; align-items:center; gap:6px;
-    transition:border-color .15s ease, color .15s ease, transform .12s ease, box-shadow .15s ease;
+    font-family:var(--font-mono); font-size:11.5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:9px;
+    padding:9px 12px; cursor:pointer; color:var(--muted);
+    transition:border-color .15s ease, color .15s ease;
   }
-  .recent-chip:hover{color:var(--text); border-color:var(--muted-2); transform:translateY(-1px); box-shadow:0 4px 12px -6px rgba(15,23,42,.12);}
-  .recent-chip:active{transform:scale(.97);}
-  .recent-chip .a{color:var(--a); font-weight:600;}
-  .recent-chip .b{color:var(--b); font-weight:600;}
+  .recent-chip:hover{color:var(--text); border-color:var(--muted-2);}
+  .recent-chip .a{color:var(--a);}
+  .recent-chip .b{color:var(--b);}
 
   footer{
     margin-top:44px; padding-top:20px; border-top:1px solid var(--border-soft);
@@ -385,7 +374,7 @@
   </section>
 
   <div class="recent" id="recentWrap" style="display:none;">
-    <div class="recent-label">Recent comparisons</div>
+    <div class="examples-label">Recent comparisons</div>
     <div class="recent-row" id="recentRow"></div>
   </div>
 
