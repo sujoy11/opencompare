@@ -29,10 +29,10 @@ if not OR_KEY and os.path.exists(KEY_FILE):
     OR_KEY = open(KEY_FILE).read().strip()
 
 OR_URL = "https://openrouter.ai/api/v1/chat/completions" if OR_KEY else ""
-# free models (no billing), fast + good quality. gemma-4-26b follows JSON best.
+# free models (no billing). ling-3.0-flash is fastest (~1.5s); gemma-4-26b more reliable JSON.
 OR_MODELS = [
-    "google/gemma-4-26b-a4b-it:free",
     "ling-3.0-flash:free",
+    "google/gemma-4-26b-a4b-it:free",
     "nvidia/nemotron-3-nano-30b-a3b:free",
 ]
 
@@ -113,13 +113,25 @@ def _parse_json(raw):
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
-        # repair common LLM JSON mistakes: trailing commas, etc.
         import re
-        cleaned = re.sub(r",\s*([}\]])", r"\1", raw)  # trailing commas
+        # 1. trailing commas before } or ]
+        cleaned = re.sub(r",\s*([}\]])", r"\1", raw)
         try:
             return json.loads(cleaned)
         except json.JSONDecodeError:
-            # last resort: try to fix single->double quotes on keys already double
+            pass
+        # 2. unbalanced brackets — try to close them
+        try:
+            depth = {"{": 0, "[": 0}
+            for ch in cleaned:
+                if ch == "{": depth["{"] += 1
+                elif ch == "}": depth["{"] = max(0, depth["{"] - 1)
+                elif ch == "[": depth["["] += 1
+                elif ch == "]": depth["["] = max(0, depth["["] - 1)
+            fixed = cleaned
+            fixed += "]" * depth["["] + "}" * depth["{"]
+            return json.loads(fixed)
+        except json.JSONDecodeError:
             raise
 
 
