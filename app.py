@@ -22,19 +22,14 @@ if os.path.exists(DATA):
     except Exception:
         COMPARES = []
 
-KEY_FILE = os.path.join(HERE, ".or_key")
-OR_KEY = os.environ.get("OPENROUTER_KEY", "")
+KEY_FILE = os.path.join(HERE, ".mistral_key")
+MISTRAL_KEY = os.environ.get("MISTRAL_KEY", "")
 LAST_ERROR = ""
-if not OR_KEY and os.path.exists(KEY_FILE):
-    OR_KEY = open(KEY_FILE).read().strip()
+if not MISTRAL_KEY and os.path.exists(KEY_FILE):
+    MISTRAL_KEY = open(KEY_FILE).read().strip()
 
-OR_URL = "https://openrouter.ai/api/v1/chat/completions" if OR_KEY else ""
-# free models (no billing). gemma-4-26b follows JSON schema reliably; ling is faster but unreliable.
-OR_MODELS = [
-    "google/gemma-4-26b-a4b-it:free",
-    "ling-3.0-flash:free",
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-]
+MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions" if MISTRAL_KEY else ""
+MISTRAL_MODEL = "mistral-small-latest"
 
 CATEGORIES = [
     "AI Tools", "Software", "Hosting", "Smartphones", "Laptops",
@@ -67,33 +62,27 @@ PROMPT = (
 )
 
 
-def _call_or(prompt):
-    """Call OpenRouter (OpenAI-compatible) with free models, fallback chain."""
-    last_err = ""
-    for model in OR_MODELS:
-        body = json.dumps({
-            "model": model,
-            "messages": [
-                {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
-                {"role": "user", "content": prompt},
-            ],
-            "temperature": 0.3,
-            "max_tokens": 900,
-        }).encode()
-        req = urllib.request.Request(
-            OR_URL, data=body,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {OR_KEY}",
-            },
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=40) as r:
-                d = json.load(r)
-                return d["choices"][0]["message"]["content"]
-        except Exception as e:
-            last_err = f"{type(e).__name__}: {str(e)[:150]}"
-    raise RuntimeError(last_err)
+def _call_mistral(prompt):
+    """Call Mistral (OpenAI-compatible) and return model text."""
+    body = json.dumps({
+        "model": MISTRAL_MODEL,
+        "messages": [
+            {"role": "system", "content": "You are OpenCompare, a neutral comparison engine. Always respond with valid JSON only."},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 900,
+    }).encode()
+    req = urllib.request.Request(
+        MISTRAL_URL, data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {MISTRAL_KEY}",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=60) as r:
+        d = json.load(r)
+        return d["choices"][0]["message"]["content"]
 
 
 def _parse_json(raw):
@@ -153,14 +142,14 @@ for _item in COMPARES:
 
 
 def compare(a, b):
-    if not OR_KEY:
+    if not MISTRAL_KEY:
         return _fallback(a, b)
     key = f"{a.lower()}|{b.lower()}"
     # cache hit -> no API call (saves quota)
     if key in CACHE:
         return CACHE[key]
     try:
-        result = _parse_json(_call_or(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
+        result = _parse_json(_call_mistral(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
         if "scores" not in result or "winner" not in result:
             raise ValueError("incomplete")
         CACHE[key] = result
@@ -223,7 +212,7 @@ class Handler(BaseHTTPRequestHandler):
             net_ok = "unknown"
             try:
                 # test HF endpoint reachability
-                test_url = "https://openrouter.ai/api/v1/models"
+                test_url = "https://api.mistral.ai/v1/models"
                 urllib.request.urlopen(test_url, timeout=8)
                 net_ok = "reachable"
             except urllib.error.HTTPError as he:
@@ -234,11 +223,11 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as ne:
                 net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:100]}"
             self._send(200, json.dumps({
-                "or_key_present": bool(OR_KEY),
-                "or_key_len": len(OR_KEY),
-                "or_models": OR_MODELS,
+                "mistral_key_present": bool(MISTRAL_KEY),
+                "mistral_key_len": len(MISTRAL_KEY),
+                "mistral_model": MISTRAL_MODEL,
                 "port": os.environ.get("PORT", "unset"),
-                "network_to_or": net_ok,
+                "network_to_mistral": net_ok,
                 "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
