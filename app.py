@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = HERE
 DATA = os.path.join(HERE, "compare.json")
 INDEX = os.path.join(HERE, "index.html")
 
@@ -209,6 +210,18 @@ class Handler(BaseHTTPRequestHandler):
         p = urlparse(self.path)
         if p.path in ("/", "/index.html"):
             self._send(200, render(), "text/html")
+        elif p.path == "/robots.txt":
+            try:
+                with open(os.path.join(BASE_DIR, "robots.txt")) as f:
+                    self._send(200, f.read(), "text/plain")
+            except Exception:
+                self._send(404, "not found")
+        elif p.path == "/sitemap.xml":
+            try:
+                with open(os.path.join(BASE_DIR, "sitemap.xml")) as f:
+                    self._send(200, f.read(), "application/xml")
+            except Exception:
+                self._send(404, "not found")
         elif p.path == "/api/compare":
             self._send(200, json.dumps(COMPARES))
         elif p.path == "/api/categories":
