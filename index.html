@@ -143,32 +143,21 @@
     box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg);
     animation:glow 2.6s ease-in-out infinite;
   }
-  /* spinning conic ring around the badge */
-  .vs-badge::before{
-    content:""; position:absolute; inset:-5px; border-radius:50%;
+  /* idle spinner ring — subtle, always present */
+  .vs-ring{
+    position:absolute; inset:-5px; border-radius:50%; z-index:2; pointer-events:none;
     background:conic-gradient(from 0deg, var(--violet), var(--coral), var(--mint), var(--violet));
     -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
-    mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+            mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
     animation:ringspin 3.2s linear infinite;
-    z-index:-1;
+    opacity:0.45;
   }
   @keyframes glow{0%,100%{box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg), 0 0 0 0 rgba(124,92,252,0.25);} 50%{box-shadow:0 8px 22px -6px rgba(255,107,107,0.6), 0 0 0 4px var(--bg), 0 0 0 7px rgba(124,92,252,0);}}
   @keyframes ringspin{to{transform:rotate(360deg);}}
-  @media (prefers-reduced-motion: reduce){ .vs-badge, .vs-badge::before{animation:none;} }
-  .vs-badge.is-loading{
-    animation:none;
-    /* Remove the idle background halo so the loading ring can show through. */
-    box-shadow:0 8px 18px -6px rgba(124,92,252,0.5);
-  }
-  .vs-badge.is-loading::before{
-    /* Keep the masked conic gradient above the page, extending 6px past the badge. */
-    inset:-6px;
-    z-index:0;
-    opacity:1;
-    background:conic-gradient(from 0deg, var(--violet), var(--coral), var(--mint), var(--violet));
-    animation:badge-loading-ring 0.9s linear infinite;
-  }
-  @keyframes badge-loading-ring{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .vs-ring{animation:none;} }
+  /* loading: ring bright + fast, badge no pump */
+  .vs-badge.is-loading{animation:none; box-shadow:0 8px 18px -6px rgba(124,92,252,0.5);}
+  .vs-badge.is-loading .vs-ring{opacity:1; animation:ringspin 0.9s linear infinite;}
 
   /* ---------- examples & categories ---------- */
   .section-label{
@@ -313,7 +302,7 @@
           <div class="side-top"><span class="badge-tag">A</span><span class="side-label">Item A</span></div>
           <input type="text" id="itemA" placeholder="e.g. ChatGPT" maxlength="60" required>
         </div>
-        <div class="vs-wrap"><div class="vs-badge" id="vsBadge">VS</div></div>
+        <div class="vs-wrap"><div class="vs-badge" id="vsBadge"><span class="vs-ring"></span>VS</div></div>
         <div class="side side--b">
           <div class="side-top"><span class="badge-tag">B</span><span class="side-label">Item B</span></div>
           <input type="text" id="itemB" placeholder="e.g. Claude" maxlength="60" required>
