@@ -18,387 +18,330 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="OpenCompare — Compare Anything. Decide Smarter.">
 <meta name="twitter:description" content="Free AI comparison engine. Drop in two items and get an instant, neutral, detailed side-by-side comparison.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#ffffff;
-    --bg-grid: rgba(15,23,42,0.03);
-    --panel:#ffffff;
-    --panel-2:#f7f8fb;
-    --border:#e6e9ef;
-    --border-soft:#eef1f6;
-    --text:#0f172a;
-    --muted:#64748b;
-    --muted-2:#94a3b8;
-    --a:#4f46e5;
-    --a-soft:rgba(79,70,229,0.08);
-    --a-line:rgba(79,70,229,0.30);
-    --b:#059669;
-    --b-soft:rgba(5,150,105,0.08);
-    --b-line:rgba(5,150,105,0.30);
-    --gold:#d97706;
-    --good:#10b981;
-    --radius:14px;
-    --font-display:'Space Grotesk', system-ui, sans-serif;
+    --bg:#fbfaff;
+    --card:#ffffff;
+    --border:#ece9f7;
+    --text:#181521;
+    --muted:#75758c;
+    --muted-2:#a3a3b8;
+
+    --violet:#7c5cfc;
+    --violet-soft:#f1edff;
+    --blue:#3e8eff;
+    --blue-soft:#eaf3ff;
+    --coral:#ff6b6b;
+    --coral-soft:#ffeded;
+    --mint:#0fb88a;
+    --mint-soft:#e6faf3;
+    --amber:#ffab1f;
+    --amber-soft:#fff5e2;
+
+    --radius-lg:22px;
+    --radius-md:16px;
+    --radius-sm:11px;
+    --font-display:'Outfit', system-ui, sans-serif;
     --font-body:'Inter', system-ui, sans-serif;
     --font-mono:'JetBrains Mono', ui-monospace, monospace;
   }
-
   *{box-sizing:border-box;}
-  html,body{overflow-x:hidden;width:100%;}
   html{-webkit-tap-highlight-color:transparent;}
   body{
-    margin:0;
-    background:
-      radial-gradient(circle at 15% -10%, rgba(79,70,229,0.07), transparent 45%),
-      radial-gradient(circle at 90% 10%, rgba(5,150,105,0.06), transparent 40%),
-      var(--bg);
-    color:var(--text);
-    font-family:var(--font-body);
-    line-height:1.5;
-    min-height:100vh;
-    padding:28px 16px 60px;
+    margin:0; min-height:100vh; padding:26px 16px 56px;
+    background:var(--bg); color:var(--text); font-family:var(--font-body);
+    line-height:1.55; position:relative; overflow-x:hidden;
   }
-  body::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    background-image:
-      linear-gradient(var(--bg-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
-    background-size:34px 34px;
-    mask-image:radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent);
-    z-index:0;
-  }
-  .shell{position:relative; z-index:1; max-width:560px; width:100%; margin:0 auto; overflow-x:clip;}
+  .blob{position:fixed; border-radius:50%; filter:blur(50px); z-index:0; opacity:0.55; pointer-events:none;}
+  .blob-1{width:280px; height:280px; top:-90px; left:-90px; background:radial-gradient(circle, #d8c8ff, transparent 70%);}
+  .blob-2{width:260px; height:260px; top:-40px; right:-110px; background:radial-gradient(circle, #bfe6ff, transparent 70%);}
+  .blob-3{width:260px; height:260px; bottom:10%; left:-100px; background:radial-gradient(circle, #ffd9d9, transparent 70%);}
+  .blob-4{width:220px; height:220px; bottom:-80px; right:-70px; background:radial-gradient(circle, #c9f5e4, transparent 70%);}
 
+  .shell{position:relative; z-index:1; max-width:560px; margin:0 auto;}
   a{color:inherit;}
 
-  /* ---------- Header ---------- */
-  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:34px;}
-  .brand{display:flex; align-items:center; font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:-0.02em;}
-  .brand .b-open{color:var(--text);}
-  .brand .b-compare{color:var(--a);}
-  .status-pill{
-    display:flex; align-items:center; gap:6px;
-    font-family:var(--font-mono); font-size:10.5px; color:var(--muted);
-    border:1px solid var(--border); border-radius:99px; padding:5px 10px;
-    text-transform:uppercase; letter-spacing:0.06em;
-    background:var(--panel);
+  /* ---------- header ---------- */
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:30px;}
+  .brand{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:17px;}
+  .brand-mark{
+    width:30px; height:30px; border-radius:10px;
+    background:linear-gradient(135deg, var(--violet), var(--coral));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;
+    box-shadow:0 6px 14px -6px rgba(124,92,252,0.55);
   }
-  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--good); box-shadow:0 0 8px var(--good);}
+  .live-pill{
+    display:flex; align-items:center; gap:6px;
+    background:var(--mint-soft); color:var(--mint);
+    font-size:11.5px; font-weight:600; border-radius:99px; padding:6px 12px;
+  }
+  .live-dot{width:6px; height:6px; border-radius:50%; background:var(--mint);}
 
-  /* ---------- Hero ---------- */
+  /* ---------- hero ---------- */
   .eyebrow{
-    font-family:var(--font-mono); font-size:11px; color:var(--muted-2);
-    text-transform:uppercase; letter-spacing:0.14em; margin:0 0 8px;
+    display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:0.03em;
+    color:var(--violet); background:var(--violet-soft); border-radius:99px;
+    padding:6px 13px; margin-bottom:16px;
   }
   h1{
-    font-family:var(--font-display); font-weight:700;
-    font-size:clamp(27px, 7vw, 36px); line-height:1.06; letter-spacing:-0.02em;
-    margin:0 0 10px;
+    font-family:var(--font-display); font-weight:800; font-size:clamp(30px,8vw,40px);
+    line-height:1.12; letter-spacing:-0.01em; margin:0 0 12px;
   }
-  h1 .line-b{
-    background:linear-gradient(90deg, var(--a), var(--b));
+  h1 .grad{
+    background:linear-gradient(90deg, var(--violet), var(--coral));
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .sub{color:var(--muted); font-size:14.5px; max-width:46ch; margin:0 0 18px; line-height:1.45;}
+  .sub{color:var(--muted); font-size:15px; max-width:44ch; margin:0 0 30px;}
 
-  /* ---------- Duel ---------- */
-  .duel{position:relative; display:flex; flex-direction:column; gap:0; margin-bottom:22px;}
+  /* ---------- duel ---------- */
+  .duel{display:flex; flex-direction:column; margin-bottom:8px;}
   .side{
-    position:relative; width:100%; box-sizing:border-box; min-height:78px;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:16px 16px 15px;
-    transition:border-color .18s ease, box-shadow .18s ease;
-    box-shadow:0 1px 2px rgba(15,23,42,.03);
+    position:relative;
+    border-radius:20px;
+    padding:14px 16px 16px;
+    box-shadow:0 10px 22px -18px rgba(24,21,33,0.16);
+    transition:box-shadow .15s ease, border-color .15s ease;
+    overflow:hidden;
   }
-  .side--a{border-left:3px solid var(--a);}
-  .side--b{border-left:3px solid var(--b);}
-  .side--a:focus-within{border-color:var(--a-line); box-shadow:0 0 0 3px var(--a-soft);}
-  .side--b:focus-within{border-color:var(--b-line); box-shadow:0 0 0 3px var(--b-soft);}
+  .side--a{background:var(--blue-soft); border:1px solid rgba(62,142,255,0.22);}
+  .side--b{background:var(--coral-soft); border:1px solid rgba(255,107,107,0.22);}
+  .side:focus-within{box-shadow:0 12px 26px -16px rgba(24,21,33,0.2);}
 
+  .side-top{display:flex; align-items:center; gap:8px; margin-bottom:9px;}
+  .badge-tag{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:22px; height:20px; padding:0 6px; border-radius:7px; flex-shrink:0;
+    font-family:var(--font-mono); font-weight:700; font-size:11px;
+    background:#fff;
+  }
+  .side--a .badge-tag{color:var(--blue); box-shadow:0 2px 6px -2px rgba(62,142,255,0.35);}
+  .side--b .badge-tag{color:var(--coral); box-shadow:0 2px 6px -2px rgba(255,107,107,0.35);}
   .side-label{
-    display:flex; align-items:center; gap:7px;
-    font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.1em;
-    text-transform:uppercase; margin-bottom:8px;
+    font-family:var(--font-mono); font-weight:700; font-size:11px;
+    letter-spacing:0.12em; text-transform:uppercase;
   }
-  .side-tag{
-    width:18px; height:18px; border-radius:5px; font-size:10px; font-weight:600;
-    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono);
-  }
-  .side--a .side-tag{background:var(--a-soft); color:var(--a);}
-  .side--b .side-tag{background:var(--b-soft); color:var(--b);}
-  .side--a .side-label{color:var(--a);}
-  .side--b .side-label{color:var(--b);}
+  .side--a .side-label{color:var(--blue);}
+  .side--b .side-label{color:var(--coral);}
 
   .side input{
-    width:100%; background:transparent; border:none; outline:none;
-    color:var(--text); font-family:var(--font-display); font-weight:600;
-    font-size:18px; padding:6px 0 2px; margin-top:2px;
+    width:100%; border:none; outline:none; background:transparent;
+    font-family:var(--font-display); font-weight:600; font-size:18px; color:var(--text); padding:1px 0;
   }
   .side input::placeholder{color:var(--muted-2); font-weight:500;}
 
-  .vs-wrap{
-    display:flex; align-items:center; justify-content:center;
-    height:44px; margin:6px 0;
-  }
-  .vs-line{flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);}
+  .vs-wrap{display:flex; justify-content:center; margin:-13px 0; position:relative; z-index:2;}
   .vs-badge{
-    position:relative;
-    width:44px; height:44px; border-radius:50%;
-    background:var(--panel-2); border:1px solid var(--border);
+    width:38px; height:38px; border-radius:50%;
+    background:linear-gradient(135deg, var(--violet), var(--coral));
+    color:#fff; font-family:var(--font-display); font-weight:700; font-size:11.5px;
     display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-display); font-weight:700; font-size:11px;
-    color:var(--muted); letter-spacing:0.02em;
-    flex-shrink:0; margin:0 10px;
-    z-index:2;
-    transition:color .2s ease, border-color .2s ease, transform .2s ease;
+    box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg);
+    animation:pulse 2.6s ease-in-out infinite;
   }
-  .vs-badge.is-ready{color:var(--text); border-color:var(--border); box-shadow:0 0 0 1px var(--border), 0 0 24px -6px rgba(79,70,229,0.35), 0 0 24px -6px rgba(5,150,105,0.25);}
-  .vs-badge.is-loading{color:transparent;}
-  .vs-badge.is-loading::before{
-    content:""; position:absolute; inset:0; border-radius:50%;
-    background:conic-gradient(from 0deg, var(--a), var(--b), var(--a));
-    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
-            mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
-    animation:vs-spin 0.9s linear infinite;
-  }
-  .vs-badge.is-loading::after{
-    content:""; position:absolute; inset:7px; border-radius:50%;
-    border:2px solid transparent; border-top-color:var(--a-soft); border-bottom-color:var(--b-soft);
-    animation:vs-spin 1.4s cubic-bezier(.6,.1,.4,.9) infinite reverse;
-    opacity:.9;
-  }
-  @keyframes vs-spin{to{transform:rotate(360deg);}}
-  @media (prefers-reduced-motion: reduce){ .vs-badge.is-loading::before, .vs-badge.is-loading::after{animation:none;} }
+  @keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.08);}}
+  @media (prefers-reduced-motion: reduce){ .vs-badge{animation:none;} }
+  .vs-badge.is-loading{animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 
-  /* ---------- Examples ---------- */
-  .examples{margin:14px 0 16px;}
-  .examples-label{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;}
+  /* ---------- examples & categories ---------- */
+  .section-label{font-size:11.5px; font-weight:600; color:var(--muted); margin:22px 0 10px;}
   .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip{flex:0 0 auto; max-width:46%;
-    font-family:var(--font-mono); font-size:10.5px; color:var(--muted);
-    background:var(--panel); border:1px solid var(--border); border-radius:9px;
-    padding:9px 12px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
+  .chip{
+    font-family:var(--font-body); font-weight:600; font-size:12.5px;
+    border:none; border-radius:99px; padding:8px 13px; cursor:pointer;
+    transition:transform .12s ease, filter .12s ease;
   }
-  .chip:hover{color:var(--text); border-color:var(--muted-2);}
-  .chip:active{transform:scale(0.97);}
-  .chip .a{color:var(--a); font-weight:600;}
-  .chip .b{color:var(--b); font-weight:600;}
+  .chip:active{transform:scale(0.96);}
+  .chip.c0{background:var(--blue-soft); color:var(--blue);}
+  .chip.c1{background:var(--violet-soft); color:var(--violet);}
+  .chip.c2{background:var(--mint-soft); color:var(--mint);}
+  .chip.c3{background:var(--coral-soft); color:var(--coral);}
 
-  /* ---------- Button ---------- */
+  .cat-row{display:flex; flex-wrap:wrap; gap:7px;}
+  .cat-chip{
+    font-size:11.5px; color:var(--muted); background:var(--card);
+    border:1px solid var(--border); border-radius:99px; padding:6px 11px;
+  }
+
+  /* ---------- button ---------- */
   .btn-compare{
-    width:100%; border:none; border-radius:12px; cursor:pointer;
-    padding:16px; font-family:var(--font-display); font-weight:700; font-size:15px;
-    color:#ffffff; background:linear-gradient(90deg, var(--a), var(--b));
+    width:100%; border:none; border-radius:99px; cursor:pointer; margin-top:26px;
+    padding:17px; font-family:var(--font-display); font-weight:700; font-size:15.5px;
+    color:#fff; background:linear-gradient(90deg, var(--violet), var(--coral));
     display:flex; align-items:center; justify-content:center; gap:8px;
-    transition:transform .12s ease, opacity .15s ease, box-shadow .15s ease;
-    box-shadow:0 10px 30px -12px rgba(79,70,229,0.45);
+    box-shadow:0 14px 28px -12px rgba(124,92,252,0.5);
+    transition:transform .12s ease, opacity .15s ease;
   }
   .btn-compare:active{transform:scale(0.985);}
-  .btn-compare:disabled{opacity:0.55; cursor:not-allowed; box-shadow:none;}
+  .btn-compare:disabled{opacity:0.55; cursor:not-allowed;}
+  .dots{display:inline-flex; gap:4px;}
+  .dots span{width:6px; height:6px; border-radius:50%; background:#fff; opacity:0.5; animation:bounce 1s infinite ease-in-out;}
+  .dots span:nth-child(2){animation-delay:.15s;} .dots span:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0); opacity:0.5;} 40%{transform:translateY(-4px); opacity:1;}}
 
   .error-msg{
-    display:none; align-items:center; gap:7px;
-    font-family:var(--font-mono); font-size:12.5px; color:#b91c1c;
-    background:#fef2f2; border:1px solid #fecaca;
-    border-radius:9px; padding:10px 12px; margin-top:12px;
+    display:none; align-items:center; gap:8px; margin-top:12px;
+    background:var(--coral-soft); color:var(--coral); font-size:13px; font-weight:500;
+    border-radius:var(--radius-sm); padding:11px 14px;
   }
   .error-msg.is-visible{display:flex;}
 
-  /* ---------- Categories strip ---------- */
-  .cats{margin-top:26px; padding-top:20px; border-top:1px solid var(--border-soft);}
-  .cats-inner{display:flex; flex-wrap:wrap; gap:6px 10px; font-family:var(--font-mono); font-size:11px; color:var(--muted-2); line-height:1.6; overflow-wrap:break-word; word-break:break-word;}
-  .cats-inner span{white-space:normal; max-width:100%;}
-
-  /* ---------- Result ---------- */
-  .result{
-    display:none; margin-top:36px; opacity:0; transform:translateY(10px);
-    transition:opacity .35s ease, transform .35s ease;
-  }
+  /* ---------- result ---------- */
+  .result{display:none; margin-top:34px; opacity:0; transform:translateY(10px); transition:opacity .35s ease, transform .35s ease;}
   .result.is-visible{display:block; opacity:1; transform:translateY(0);}
 
-  .verdict-banner{
-    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
-    padding:18px; margin-bottom:16px; box-shadow:0 1px 2px rgba(15,23,42,.03);
+  .winner-banner{
+    border-radius:var(--radius-lg); padding:20px; margin-bottom:16px; color:#fff;
+    box-shadow:0 16px 30px -16px rgba(24,21,33,0.35);
   }
-  .verdict-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
-  .verdict-title{font-family:var(--font-display); font-weight:700; font-size:16px;}
-  .verdict-title .gold{color:var(--gold);}
-  .verdict-time{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2);}
+  .winner-banner.a{background:linear-gradient(135deg, var(--blue), #6bb3ff);}
+  .winner-banner.b{background:linear-gradient(135deg, var(--coral), #ff9d9d);}
+  .winner-banner.tie{background:linear-gradient(135deg, var(--violet), var(--mint));}
+  .wb-title{font-family:var(--font-display); font-weight:700; font-size:19px; margin-bottom:10px;}
+  .wb-bars{display:flex; flex-direction:column; gap:6px;}
+  .wb-bar-row{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600;}
+  .wb-track{flex:1; height:8px; border-radius:99px; background:rgba(255,255,255,0.3); overflow:hidden;}
+  .wb-fill{height:100%; border-radius:99px; background:#fff;}
+  .wb-num{width:28px; text-align:right; flex-shrink:0;}
 
-  .tug{
-    position:relative; height:10px; border-radius:99px; overflow:hidden;
-    background:var(--panel-2); border:1px solid var(--border); margin-bottom:8px;
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:18px; margin-bottom:14px; box-shadow:0 10px 24px -20px rgba(24,21,33,0.15);
   }
-  .tug-a, .tug-b{position:absolute; top:0; bottom:0;}
-  .tug-a{left:0; background:var(--a);}
-  .tug-b{right:0; background:var(--b);}
-  .tug-scores{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px;}
-  .tug-scores .a{color:var(--a);}
-  .tug-scores .b{color:var(--b);}
+  .card-head{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:14.5px; margin-bottom:12px;}
 
-  .cards-grid{display:flex; flex-direction:column; gap:12px; margin-bottom:16px;}
-  .pc-card{
-    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
-    padding:16px; box-shadow:0 1px 2px rgba(15,23,42,.03);
+  .chip-cloud{display:flex; flex-wrap:wrap; gap:7px;}
+  .pill{
+    font-size:12.5px; font-weight:500; border-radius:10px; padding:6px 11px;
+    display:inline-flex; align-items:center; gap:5px;
   }
-  .pc-card.a{border-top:3px solid var(--a);}
-  .pc-card.b{border-top:3px solid var(--b);}
-  .pc-head{font-family:var(--font-display); font-weight:600; font-size:14px; margin-bottom:10px;}
-  .pc-card.a .pc-head{color:var(--a);}
-  .pc-card.b .pc-head{color:var(--b);}
-  .pc-list{list-style:none; margin:0 0 10px; padding:0; display:flex; flex-direction:column; gap:6px;}
-  .pc-list:last-child{margin-bottom:0;}
-  .pc-list li{font-size:13px; color:var(--text); display:flex; gap:8px; align-items:flex-start;}
-  .pc-list .mark{font-family:var(--font-mono); font-size:12px; flex-shrink:0; margin-top:1px;}
-  .pc-list.pros .mark{color:var(--good);}
-  .pc-list.cons .mark{color:var(--muted-2);}
+  .pill.pro{background:var(--mint-soft); color:var(--mint);}
+  .pill.con{background:var(--coral-soft); color:#c94848;}
+  .pill-divider{width:100%; height:1px; background:var(--border); margin:12px 0;}
 
-  .metrics{
-    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
-    padding:6px 16px; margin-bottom:16px; box-shadow:0 1px 2px rgba(15,23,42,.03);
-  }
-  .metrics-title{font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; padding:12px 0 4px;}
-  .m-row{padding:12px 0; border-top:1px solid var(--border-soft);}
-  .m-label{font-size:11.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;}
-  .m-vals{display:flex; flex-direction:column; gap:8px;}
-  .m-val{font-family:var(--font-mono); font-size:12.5px; color:var(--text); line-height:1.5; word-break:break-word; padding:10px 12px; border-radius:10px; background:var(--panel-2); border-left:3px solid transparent;}
-  .m-val:first-child{border-left-color:var(--a); background:color-mix(in srgb, var(--a) 6%, var(--panel-2));}
-  .m-val.b-val{border-left-color:var(--b); background:color-mix(in srgb, var(--b) 6%, var(--panel-2));}
+  .metric-row{display:flex; align-items:center; gap:8px; padding:10px 0; border-top:1px solid var(--border);}
+  .metric-row:first-child{border-top:none;}
+  .metric-label{flex:1; font-size:12.5px; color:var(--muted); font-weight:500;}
+  .metric-val{font-size:11.5px; font-weight:600; border-radius:8px; padding:5px 9px; max-width:38%; text-align:center; word-break:break-word;}
+  .metric-val.a{background:var(--blue-soft); color:var(--blue);}
+  .metric-val.b{background:var(--coral-soft); color:var(--coral);}
 
-  .verdict-panel{
-    background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius);
-    padding:18px; margin-bottom:16px;
-  }
-  .vp-row{margin-bottom:14px;}
+  .verdict-card{background:var(--violet-soft); border:none;}
+  .vp-row{margin-bottom:13px;}
   .vp-row:last-child{margin-bottom:0;}
-  .vp-label{font-family:var(--font-mono); font-size:10px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:5px;}
-  .vp-text{font-size:13.5px; color:var(--text); line-height:1.55;}
-  .vp-alt-list{display:flex; flex-wrap:wrap; gap:6px;}
-  .vp-alt{font-family:var(--font-mono); font-size:11.5px; color:var(--muted); background:var(--panel); border:1px solid var(--border); border-radius:7px; padding:5px 9px;}
+  .vp-label{font-size:11px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;}
+  .vp-text{font-size:13.5px; color:var(--text);}
+  .vp-alts{display:flex; flex-wrap:wrap; gap:6px;}
+  .vp-alt{font-size:11.5px; font-weight:600; color:var(--violet); background:#fff; border-radius:99px; padding:5px 11px;}
 
-  /* ---------- Recent ---------- */
-  .recent{margin-top:30px;}
-  .recent-row{display:flex; flex-wrap:wrap; gap:8px; padding-bottom:4px;}
+  /* ---------- recent ---------- */
+  .recent{margin-top:28px;}
+  .recent-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;}
+  .recent-row::-webkit-scrollbar{display:none;}
   .recent-chip{
-    flex:0 0 auto; max-width:46%;
-    font-family:var(--font-mono); font-size:10.5px; color:var(--muted);
-    background:var(--panel); border:1px solid var(--border); border-radius:9px;
-    padding:9px 12px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
+    flex-shrink:0; font-size:12px; font-weight:500; white-space:nowrap; cursor:pointer;
+    background:var(--card); border:1px solid var(--border); border-radius:99px; padding:9px 14px;
+    color:var(--muted); transition:border-color .15s ease;
   }
-  .recent-chip:hover{color:var(--text); border-color:var(--muted-2);}
-  .recent-chip .a{color:var(--a); font-weight:600;}
-  .recent-chip .b{color:var(--b); font-weight:600;}
+  .recent-chip:hover{border-color:var(--muted-2);}
+  .recent-chip .a{color:var(--blue); font-weight:600;}
+  .recent-chip .b{color:var(--coral); font-weight:600;}
 
-  footer{
-    margin-top:44px; padding-top:20px; border-top:1px solid var(--border-soft);
-    display:flex; flex-direction:column; gap:4px;
-    font-family:var(--font-mono); font-size:11px; color:var(--muted-2);
-  }
+  footer{margin-top:40px; text-align:center; font-size:11.5px; color:var(--muted-2);}
+  footer div{margin-bottom:3px;}
 </style>
 </head>
 <body>
-<div class="shell">
+  <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div><div class="blob blob-4"></div>
 
-  <header>
-    <div class="brand"><span class="b-open">Open</span><span class="b-compare">Compare</span></div>
-    <div class="status-pill"><span class="status-dot"></span> Engine live</div>
-  </header>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark">✦</span> OpenCompare</div>
+      <div class="live-pill"><span class="live-dot"></span> Engine live</div>
+    </header>
 
-  <div class="eyebrow">AI comparison engine · neutral · instant</div>
-  <h1>Compare anything.<br><span class="line-b">Decide smarter.</span></h1>
-  <p class="sub" style="display:none;">Drop in two items. Get a fact-based verdict, scored and broken down — no marketing spin.</p>
+    <span class="eyebrow">AI COMPARISON ENGINE</span>
+    <h1>Compare anything.<br><span class="grad">Decide smarter.</span></h1>
+    <p class="sub">Drop in two items and get a fact-based verdict — scored, broken down, zero marketing spin.</p>
 
-  <form class="duel" id="duelForm" autocomplete="off">
-    <div class="side side--a">
-      <div class="side-label"><span class="side-tag">A</span> Item A</div>
-      <input type="text" id="itemA" placeholder="e.g. ChatGPT" maxlength="60" required>
-    </div>
-
-    <div class="vs-wrap">
-      <div class="vs-line"></div>
-      <div class="vs-badge" id="vsBadge">VS</div>
-      <div class="vs-line"></div>
-    </div>
-
-    <div class="side side--b">
-      <div class="side-label"><span class="side-tag">B</span> Item B</div>
-      <input type="text" id="itemB" placeholder="e.g. Claude" maxlength="60" required>
-    </div>
-
-    <div class="examples">
-      <div class="examples-label">Try an example</div>
-      <div class="chip-row" id="exampleChips">
-        <button type="button" class="chip" data-a="ChatGPT" data-b="Claude">ChatGPT vs Claude</button>
-        <button type="button" class="chip" data-a="Notion" data-b="Obsidian">Notion vs Obsidian</button>
-        <button type="button" class="chip" data-a="iPhone" data-b="Samsung">iPhone vs Samsung</button>
-        <button type="button" class="chip" data-a="Hostinger" data-b="Cloudflare">Hostinger vs Cloudflare</button>
+    <form id="duelForm" autocomplete="off">
+      <div class="duel">
+        <div class="side side--a">
+          <div class="side-top"><span class="badge-tag">A</span><span class="side-label">Item A</span></div>
+          <input type="text" id="itemA" placeholder="e.g. ChatGPT" maxlength="60" required>
+        </div>
+        <div class="vs-wrap"><div class="vs-badge" id="vsBadge">VS</div></div>
+        <div class="side side--b">
+          <div class="side-top"><span class="badge-tag">B</span><span class="side-label">Item B</span></div>
+          <input type="text" id="itemB" placeholder="e.g. Claude" maxlength="60" required>
+        </div>
       </div>
-    </div>
 
-    <button type="submit" class="btn-compare" id="runBtn">Run comparison</button>
-    <div class="error-msg" id="errorMsg">⚠ <span id="errorText">Something went wrong. Try again.</span></div>
-
-    <div class="cats" id="catsWrap" style="display:none;">
-      <div class="cats-inner" id="catsInner"></div>
-    </div>
-  </form>
-
-  <section class="result" id="result">
-    <div class="verdict-banner">
-      <div class="verdict-top">
-        <div class="verdict-title" id="verdictTitle">—</div>
-        <div class="verdict-time" id="verdictTime"></div>
+      <div class="section-label">Try an example</div>
+      <div class="chip-row">
+        <button type="button" class="chip c0" data-a="ChatGPT" data-b="Claude">ChatGPT vs Claude</button>
+        <button type="button" class="chip c1" data-a="Notion" data-b="Obsidian">Notion vs Obsidian</button>
+        <button type="button" class="chip c2" data-a="iPhone" data-b="Samsung">iPhone vs Samsung</button>
+        <button type="button" class="chip c3" data-a="Hostinger" data-b="Cloudflare">Hostinger vs Cloudflare</button>
       </div>
-      <div class="tug"><div class="tug-a" id="tugA"></div><div class="tug-b" id="tugB"></div></div>
-      <div class="tug-scores"><span class="a" id="scoreA">0.0</span><span class="b" id="scoreB">0.0</span></div>
-    </div>
 
-    <div class="metrics">
-      <div class="metrics-title">Head-to-head metrics</div>
-      <div id="metricsRows"></div>
-    </div>
+      <div class="section-label" id="catsLabel" style="display:none;">Popular categories</div>
+      <div class="cat-row" id="catsRow"></div>
 
-    <div class="cards-grid">
-      <div class="pc-card a">
-        <div class="pc-head" id="cardATitle">Item A</div>
-        <ul class="pc-list pros" id="prosA"></ul>
-        <ul class="pc-list cons" id="consA"></ul>
+      <button type="submit" class="btn-compare" id="runBtn">✦ Compare now</button>
+      <div class="error-msg" id="errorMsg">⚠ <span id="errorText">Something went wrong. Try again.</span></div>
+    </form>
+
+    <section class="result" id="result">
+      <div class="winner-banner" id="winnerBanner">
+        <div class="wb-title" id="wbTitle">—</div>
+        <div class="wb-bars">
+          <div class="wb-bar-row"><span>A</span><div class="wb-track"><div class="wb-fill" id="wbFillA"></div></div><span class="wb-num" id="wbNumA">0.0</span></div>
+          <div class="wb-bar-row"><span>B</span><div class="wb-track"><div class="wb-fill" id="wbFillB"></div></div><span class="wb-num" id="wbNumB">0.0</span></div>
+        </div>
       </div>
-      <div class="pc-card b">
-        <div class="pc-head" id="cardBTitle">Item B</div>
-        <ul class="pc-list pros" id="prosB"></ul>
-        <ul class="pc-list cons" id="consB"></ul>
+
+      <div class="card">
+        <div class="card-head"><span class="badge-tag" style="background:var(--blue-soft); color:var(--blue);">A</span><span id="cardATitle">Item A</span></div>
+        <div class="chip-cloud" id="prosA"></div>
+        <div class="pill-divider"></div>
+        <div class="chip-cloud" id="consA"></div>
       </div>
+
+      <div class="card">
+        <div class="card-head"><span class="badge-tag" style="background:var(--coral-soft); color:var(--coral);">B</span><span id="cardBTitle">Item B</span></div>
+        <div class="chip-cloud" id="prosB"></div>
+        <div class="pill-divider"></div>
+        <div class="chip-cloud" id="consB"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">Head-to-head metrics</div>
+        <div id="metricsRows"></div>
+      </div>
+
+      <div class="card verdict-card">
+        <div class="vp-row"><div class="vp-label">Best for</div><div class="vp-text" id="bestFor"></div></div>
+        <div class="vp-row"><div class="vp-label">Summary</div><div class="vp-text" id="summary"></div></div>
+        <div class="vp-row"><div class="vp-label">Recommendation</div><div class="vp-text" id="recommendation"></div></div>
+        <div class="vp-row" id="altRow"><div class="vp-label">Also worth a look</div><div class="vp-alts" id="altList"></div></div>
+      </div>
+    </section>
+
+    <div class="recent" id="recentWrap" style="display:none;">
+      <div class="section-label">Recent comparisons</div>
+      <div class="recent-row" id="recentRow"></div>
     </div>
 
-    <div class="verdict-panel">
-      <div class="vp-row"><div class="vp-label">Best for</div><div class="vp-text" id="bestFor"></div></div>
-      <div class="vp-row"><div class="vp-label">Summary</div><div class="vp-text" id="summary"></div></div>
-      <div class="vp-row"><div class="vp-label">Recommendation</div><div class="vp-text" id="recommendation"></div></div>
-      <div class="vp-row" id="altRow"><div class="vp-label">Alternatives worth a look</div><div class="vp-alt-list" id="altList"></div></div>
-    </div>
-  </section>
-
-  <div class="recent" id="recentWrap" style="display:none;">
-    <div class="examples-label">Recent comparisons</div>
-    <div class="recent-row" id="recentRow"></div>
+    <footer>
+      <div>OpenCompare · AI comparison engine</div>
+      <div>Built with Python + Gemini · Minimalist MVP</div>
+    </footer>
   </div>
-
-  <footer>
-    <div>OpenCompare · AI comparison engine</div>
-    <div>Built with Python + Gemini · Minimalist MVP</div>
-  </footer>
-
-</div>
 
 <script>
 (function(){
@@ -409,81 +352,57 @@
   const resultEl = $('result');
   let allCompares = [];
 
-  function updateBadgeReady(){
-    const ready = inputA.value.trim() && inputB.value.trim();
-    vsBadge.classList.toggle('is-ready', !!ready);
-  }
-  inputA.addEventListener('input', updateBadgeReady);
-  inputB.addEventListener('input', updateBadgeReady);
-
   document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      inputA.value = chip.dataset.a;
-      inputB.value = chip.dataset.b;
-      updateBadgeReady();
+      inputA.value = chip.dataset.a; inputB.value = chip.dataset.b;
       form.requestSubmit();
     });
-    // color A (purple) and B (green) parts like recent chips
-    const a = chip.dataset.a || '', b = chip.dataset.b || '';
-    chip.innerHTML = '';
-    const sa = document.createElement('span'); sa.className = 'a'; sa.textContent = a;
-    const mid = document.createTextNode(' vs ');
-    const sb = document.createElement('span'); sb.className = 'b'; sb.textContent = b;
-    chip.appendChild(sa); chip.appendChild(mid); chip.appendChild(sb);
   });
 
   function clearChildren(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
-  function li(mark, text){
-    const el = document.createElement('li');
-    const m = document.createElement('span');
-    m.className = 'mark'; m.textContent = mark;
-    const t = document.createElement('span');
-    t.textContent = text;
-    el.appendChild(m); el.appendChild(t);
+  function pill(cls, icon, text){
+    const el = document.createElement('span');
+    el.className = 'pill ' + cls;
+    el.textContent = icon + ' ' + text;
     return el;
   }
 
   function renderResult(a, b, result, timeLabel){
-    const scoreA = Number(result?.scores?.a ?? 0);
-    const scoreB = Number(result?.scores?.b ?? 0);
+    const scoreA = Number(result?.scores?.a ?? 0), scoreB = Number(result?.scores?.b ?? 0);
     const total = scoreA + scoreB || 1;
-    const pctA = Math.max(6, (scoreA/total)*100);
-    const pctB = Math.max(6, 100-pctA);
+    const pctA = Math.max(6, (scoreA/total)*100), pctB = Math.max(6, 100-pctA);
+    $('wbFillA').style.width = pctA + '%';
+    $('wbFillB').style.width = pctB + '%';
+    $('wbNumA').textContent = scoreA.toFixed(1);
+    $('wbNumB').textContent = scoreB.toFixed(1);
 
-    $('tugA').style.width = pctA + '%';
-    $('tugB').style.width = pctB + '%';
-    $('scoreA').textContent = scoreA.toFixed(1);
-    $('scoreB').textContent = scoreB.toFixed(1);
-
+    const banner = $('winnerBanner');
+    banner.className = 'winner-banner';
     let title;
-    if (result?.winner === 'A') title = `🏆 ${a} wins`;
-    else if (result?.winner === 'B') title = `🏆 ${b} wins`;
-    else title = `⚖ Too close to call`;
-    $('verdictTitle').textContent = title;
-    $('verdictTime').textContent = timeLabel || '';
+    if (result?.winner === 'A'){ banner.classList.add('a'); title = `🏆 ${a} wins`; }
+    else if (result?.winner === 'B'){ banner.classList.add('b'); title = `🏆 ${b} wins`; }
+    else { banner.classList.add('tie'); title = `⚖ Too close to call`; }
+    $('wbTitle').textContent = title;
 
-    $('cardATitle').textContent = a;
-    $('cardBTitle').textContent = b;
+    $('cardATitle').textContent = a; $('cardBTitle').textContent = b;
 
     const prosA = $('prosA'), consA = $('consA'), prosB = $('prosB'), consB = $('consB');
     clearChildren(prosA); clearChildren(consA); clearChildren(prosB); clearChildren(consB);
-    (result?.a_pros || []).forEach(x => prosA.appendChild(li('+', x)));
-    (result?.a_cons || []).forEach(x => consA.appendChild(li('–', x)));
-    (result?.b_pros || []).forEach(x => prosB.appendChild(li('+', x)));
-    (result?.b_cons || []).forEach(x => consB.appendChild(li('–', x)));
+    (result?.a_pros || []).forEach(x => prosA.appendChild(pill('pro', '✓', x)));
+    (result?.a_cons || []).forEach(x => consA.appendChild(pill('con', '–', x)));
+    (result?.b_pros || []).forEach(x => prosB.appendChild(pill('pro', '✓', x)));
+    (result?.b_cons || []).forEach(x => consB.appendChild(pill('con', '–', x)));
 
     const rows = $('metricsRows');
     clearChildren(rows);
     (result?.metrics || []).forEach(m => {
       const row = document.createElement('div');
-      row.className = 'm-row';
-      const label = document.createElement('div'); label.className = 'm-label'; label.textContent = m.label || '';
-      const vals = document.createElement('div'); vals.className = 'm-vals';
-      const va = document.createElement('div'); va.className = 'm-val a-val'; va.textContent = m.a || '—';
-      const vb = document.createElement('div'); vb.className = 'm-val b-val'; vb.textContent = m.b || '—';
-      vals.appendChild(va); vals.appendChild(vb);
-      row.appendChild(label); row.appendChild(vals);
+      row.className = 'metric-row';
+      const label = document.createElement('div'); label.className = 'metric-label'; label.textContent = m.label || '';
+      const va = document.createElement('div'); va.className = 'metric-val a'; va.textContent = m.a || '—';
+      const vb = document.createElement('div'); vb.className = 'metric-val b'; vb.textContent = m.b || '—';
+      row.appendChild(label); row.appendChild(va); row.appendChild(vb);
       rows.appendChild(row);
     });
 
@@ -494,15 +413,8 @@
     const altList = $('altList'), altRow = $('altRow');
     clearChildren(altList);
     const alts = result?.alternatives || [];
-    if (alts.length){
-      altRow.style.display = '';
-      alts.forEach(x => {
-        const el = document.createElement('span'); el.className = 'vp-alt'; el.textContent = x;
-        altList.appendChild(el);
-      });
-    } else {
-      altRow.style.display = 'none';
-    }
+    altRow.style.display = alts.length ? '' : 'none';
+    alts.forEach(x => { const el = document.createElement('span'); el.className = 'vp-alt'; el.textContent = x; altList.appendChild(el); });
 
     resultEl.classList.add('is-visible');
     resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -523,37 +435,38 @@
       chip.appendChild(spanA); chip.appendChild(mid); chip.appendChild(spanB);
       chip.addEventListener('click', () => {
         inputA.value = item.item_a; inputB.value = item.item_b;
-        updateBadgeReady();
         renderResult(item.item_a, item.item_b, item.result, item.time);
       });
       row.appendChild(chip);
     });
   }
 
-  function showError(msg){
-    errorText.textContent = msg;
-    errorMsg.classList.add('is-visible');
-  }
+  function showError(msg){ errorText.textContent = msg; errorMsg.classList.add('is-visible'); }
   function hideError(){ errorMsg.classList.remove('is-visible'); }
 
   function setLoading(loading){
     runBtn.disabled = loading;
-    inputA.disabled = loading;
-    inputB.disabled = loading;
+    inputA.disabled = loading; inputB.disabled = loading;
     vsBadge.classList.toggle('is-loading', loading);
-    runBtn.textContent = loading ? 'Comparing…' : 'Run comparison';
+    clearChildren(runBtn);
+    if (loading){
+      runBtn.append('Comparing ');
+      const d = document.createElement('span'); d.className = 'dots';
+      d.innerHTML = '<span></span><span></span><span></span>';
+      runBtn.appendChild(d);
+    } else {
+      runBtn.textContent = '✦ Compare now';
+    }
   }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const a = inputA.value.trim(), b = inputB.value.trim();
     if (!a || !b) return;
-    hideError();
-    setLoading(true);
+    hideError(); setLoading(true);
     try {
       const res = await fetch('/api/compare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ item_a: a, item_b: b })
       });
       const data = await res.json();
@@ -573,18 +486,10 @@
       const res = await fetch('/api/categories');
       const cats = await res.json();
       if (Array.isArray(cats) && cats.length){
-        const wrap = $('catsWrap'), inner = $('catsInner');
-        clearChildren(inner);
-        const label = document.createElement('span');
-        label.textContent = 'Popular: ';
-        label.style.color = 'var(--muted-2)';
-        inner.appendChild(label);
-        cats.forEach((c, i) => {
-          const span = document.createElement('span');
-          span.textContent = c + (i < cats.length - 1 ? ' ·' : '');
-          inner.appendChild(span);
-        });
-        wrap.style.display = '';
+        $('catsLabel').style.display = '';
+        const row = $('catsRow');
+        clearChildren(row);
+        cats.forEach(c => { const el = document.createElement('span'); el.className = 'cat-chip'; el.textContent = c; row.appendChild(el); });
       }
     } catch (e) { /* non-critical */ }
   }
@@ -593,10 +498,7 @@
     try {
       const res = await fetch('/api/compare');
       const items = await res.json();
-      if (Array.isArray(items)){
-        allCompares = items;
-        renderRecent(items);
-      }
+      if (Array.isArray(items)){ allCompares = items; renderRecent(items); }
     } catch (e) { /* non-critical */ }
   }
 
