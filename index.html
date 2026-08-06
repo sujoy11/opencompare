@@ -663,14 +663,31 @@
         const items = await res.json();
         showListView('🔥 Trending comparisons', items);
       } else if (cat){
-        const name = decodeURIComponent(cat[1]);
+        const name = decodeURIComponent(cat[1]).trim();
         const res = await fetch('/api/compare');
         const all = await res.json();
-        // filter: match category keyword against either item name (best-effort, no stored category yet)
-        const items = (Array.isArray(all) ? all : []).filter(it =>
-          (it.item_a + ' ' + it.item_b).toLowerCase().includes(name.toLowerCase())
-        );
-        showListView('📂 ' + name, items.length ? items : (Array.isArray(all) ? all : []));
+        const lower = (name || '').toLowerCase();
+        // keyword map per category → which items belong
+        const KEYMAP = {
+          'ai tools': ['chatgpt','claude','ai ','gemini','copilot','llm','openai','perplexity','bard','midjourney'],
+          'software': ['notion','obsidian','figma','slack','trello','airtable','software'],
+          'hosting': ['hostinger','cloudflare','aws','azure','digitalocean','hosting','server','vps'],
+          'smartphones': ['iphone','samsung','galaxy','pixel','oneplus','phone','smartphone'],
+          'laptops': ['macbook','laptop','windows laptop','dell','lenovo','hp '],
+          'vpn': ['vpn','nordvpn','expressvpn','protonvpn','surfshark'],
+          'antivirus': ['antivirus','norton','mcafee','avast','kaspersky','bitdefender'],
+          'cloud providers': ['aws','azure','google cloud','gcp','oracle cloud','cloud'],
+          'web browsers': ['chrome','firefox','safari','edge','brave','browser','opera'],
+          'databases': ['postgres','mysql','mongodb','sql','database','redis','sqlite'],
+          'payment gateways': ['stripe','paypal','razorpay','payment','gateway','square'],
+          'website builders': ['wix','squarespace','wordpress','shopify','webflow','builder','weebly'],
+        };
+        const kws = KEYMAP[lower] || [lower];
+        const items = (Array.isArray(all) ? all : []).filter(it => {
+          const txt = (it.item_a + ' ' + it.item_b).toLowerCase();
+          return kws.some(k => txt.includes(k));
+        });
+        showListView('📂 ' + name, items);
       }
     } catch (e) { /* non-critical */ }
   }
