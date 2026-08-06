@@ -148,7 +148,12 @@
   @keyframes spin{to{transform:rotate(360deg);}}
 
   /* ---------- examples & categories ---------- */
-  .section-label{font-size:11.5px; font-weight:600; color:var(--muted); margin:22px 0 10px;}
+  .section-label{
+    font-size:12px; font-weight:700; margin:22px 0 10px;
+    background:linear-gradient(90deg, var(--violet), var(--coral));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-transform:uppercase; letter-spacing:0.04em;
+  }
   .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
   .chip{
     font-family:var(--font-body); font-weight:600; font-size:12.5px;
@@ -163,9 +168,16 @@
 
   .cat-row{display:flex; flex-wrap:wrap; gap:7px;}
   .cat-chip{
-    font-size:11.5px; color:var(--muted); background:var(--card);
-    border:1px solid var(--border); border-radius:99px; padding:6px 11px;
+    font-size:11.5px; font-weight:600; border:1px solid transparent;
+    border-radius:99px; padding:6px 12px; cursor:pointer;
+    transition:transform .12s ease, filter .12s ease;
   }
+  .cat-chip:active{transform:scale(0.96);}
+  .cat-chip.c0{background:var(--blue-soft); color:var(--blue);}
+  .cat-chip.c1{background:var(--violet-soft); color:var(--violet);}
+  .cat-chip.c2{background:var(--mint-soft); color:var(--mint);}
+  .cat-chip.c3{background:var(--coral-soft); color:var(--coral);}
+  .cat-chip.c4{background:var(--amber-soft); color:var(--amber);}
 
   /* ---------- button ---------- */
   .btn-compare{
@@ -489,7 +501,7 @@
         $('catsLabel').style.display = '';
         const row = $('catsRow');
         clearChildren(row);
-        cats.forEach(c => { const el = document.createElement('span'); el.className = 'cat-chip'; el.textContent = c; row.appendChild(el); });
+        cats.forEach((c, i) => { const el = document.createElement('span'); el.className = 'cat-chip c' + (i % 5); el.textContent = c; row.appendChild(el); });
       }
     } catch (e) { /* non-critical */ }
   }
