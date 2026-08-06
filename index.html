@@ -465,7 +465,7 @@
         a: a, b: b, w: w,
         sa: String(sc.a ?? ''), sb: String(sc.b ?? '')
       }).toString();
-      const shareUrl = location.origin + '/c/' + slug + '?d=' + encodeURIComponent(q);
+      const shareUrl = location.origin + '/c/' + slug + '?' + q;
       $('shareUrl').textContent = shareUrl;
       $('shareRow').style.display = 'flex';
       history.replaceState(null, '', '/c/' + slug + '?' + q);
@@ -551,28 +551,25 @@
 
   loadCategories();
 
-  // load a shared comparison if URL is /c/<slug> or /c/<slug>?d=<encoded>
+  // load a shared comparison if URL is /c/<slug> or /c/<slug>?a=..&b=..&w=..&sa=..&sb=..
   async function loadFromSlug(){
     const m = location.pathname.match(/^\/c\/(.+)$/);
     if (!m) return;
     const slug = m[1];
-    // stateless: data may be in ?d= query
-    const d = new URLSearchParams(location.search).get('d');
-    if (d){
-      const q = new URLSearchParams(decodeURIComponent(d));
-      const a = q.get('a'), b = q.get('b'), w = q.get('w');
-      const sa = q.get('sa'), sb = q.get('sb');
-      if (a && b){
-        inputA.value = a; inputB.value = b;
-        const result = {
-          winner: w === (a+' wins') ? 'A' : (w === (b+' wins') ? 'B' : (w === 'Too close to call' ? 'Tie' : 'VS')),
-          scores: { a: sa || 0, b: sb || 0 },
-          a_pros: [], a_cons: [], b_pros: [], b_cons: [],
-          metrics: [], best_for: '', summary: '', recommendation: '', alternatives: []
-        };
-        renderResult(a, b, result, '', slug);
-        return;
-      }
+    // stateless: data may be in query params (a, b, w, sa, sb)
+    const q = new URLSearchParams(location.search);
+    const a = q.get('a'), b = q.get('b'), w = q.get('w');
+    const sa = q.get('sa'), sb = q.get('sb');
+    if (a && b){
+      inputA.value = a; inputB.value = b;
+      const result = {
+        winner: w === (a+' wins') ? 'A' : (w === (b+' wins') ? 'B' : (w === 'Too close to call' ? 'Tie' : 'VS')),
+        scores: { a: sa || 0, b: sb || 0 },
+        a_pros: [], a_cons: [], b_pros: [], b_cons: [],
+        metrics: [], best_for: '', summary: '', recommendation: '', alternatives: []
+      };
+      renderResult(a, b, result, '', slug);
+      return;
     }
     // fallback: try server store (may be empty after a cold start)
     try {
