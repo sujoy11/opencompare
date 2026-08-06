@@ -235,10 +235,14 @@
   .pill.con{background:var(--coral-soft); color:#c94848;}
   .pill-divider{width:100%; height:1px; background:var(--border); margin:12px 0;}
 
-  .metric-row{display:flex; align-items:center; gap:8px; padding:10px 0; border-top:1px solid var(--border);}
-  .metric-row:first-child{border-top:none;}
-  .metric-label{flex:1; font-size:12.5px; color:var(--muted); font-weight:500;}
-  .metric-val{font-size:11.5px; font-weight:600; border-radius:8px; padding:5px 9px; max-width:38%; text-align:center; word-break:break-word;}
+  .metric-block{padding:13px 0; border-top:1px solid var(--border);}
+  .metric-block:first-child{border-top:none;}
+  .metric-label{font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px;}
+  .metric-values{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .metric-val{
+    font-size:12px; line-height:1.45; font-weight:500; border-radius:12px;
+    padding:9px 11px;
+  }
   .metric-val.a{background:var(--blue-soft); color:var(--blue);}
   .metric-val.b{background:var(--coral-soft); color:var(--coral);}
 
@@ -409,13 +413,15 @@
     const rows = $('metricsRows');
     clearChildren(rows);
     (result?.metrics || []).forEach(m => {
-      const row = document.createElement('div');
-      row.className = 'metric-row';
+      const block = document.createElement('div');
+      block.className = 'metric-block';
       const label = document.createElement('div'); label.className = 'metric-label'; label.textContent = m.label || '';
+      const values = document.createElement('div'); values.className = 'metric-values';
       const va = document.createElement('div'); va.className = 'metric-val a'; va.textContent = m.a || '—';
       const vb = document.createElement('div'); vb.className = 'metric-val b'; vb.textContent = m.b || '—';
-      row.appendChild(label); row.appendChild(va); row.appendChild(vb);
-      rows.appendChild(row);
+      values.appendChild(va); values.appendChild(vb);
+      block.appendChild(label); block.appendChild(values);
+      rows.appendChild(block);
     });
 
     $('bestFor').textContent = result?.best_for || '—';
