@@ -222,6 +222,57 @@ def render():
         return f.read()
 
 
+def _find_by_slug(slug):
+    for item in COMPARES:
+        if item.get("slug") == slug:
+            return item
+    return None
+
+
+def og_image(slug):
+    """Generate a share-card SVG for a comparison (dependency-free)."""
+    item = _find_by_slug(slug)
+    if not item:
+        # fallback blank card
+        a, b, winner, sa, sb = "Item A", "Item B", "VS", "0", "0"
+    else:
+        a = item.get("item_a", "Item A")
+        b = item.get("item_b", "Item B")
+        r = item.get("result", {}) or {}
+        sc = r.get("scores", {}) or {}
+        sa = str(sc.get("a", ""))
+        sb = str(sc.get("b", ""))
+        w = r.get("winner", "")
+        if w == "A":
+            winner = f"{a} wins"
+        elif w == "B":
+            winner = f"{b} wins"
+        elif w == "Tie":
+            winner = "Too close to call"
+        else:
+            winner = "VS"
+    # escape XML
+    def esc(s):
+        return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+    a, b, winner = esc(a), esc(b), esc(winner)
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c5cfc"/>
+      <stop offset="100%" stop-color="#ff6b6b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="120" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#ffffff" text-anchor="middle" opacity="0.9">OpenCompare</text>
+  <text x="600" y="300" font-family="Arial, sans-serif" font-size="84" font-weight="bold" fill="#ffffff" text-anchor="middle">{a} <tspan fill="#ffd9d9">vs</tspan> {b}</text>
+  <text x="600" y="400" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff" text-anchor="middle">{winner}</text>
+  <text x="430" y="500" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">{sa}</text>
+  <text x="770" y="500" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">{sb}</text>
+  <text x="600" y="585" font-family="Arial, sans-serif" font-size="28" fill="#ffffff" text-anchor="middle" opacity="0.85">Compare anything. Decide smarter.</text>
+</svg>'''
+    return svg
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="application/json"):
         self.send_response(code)
@@ -278,6 +329,9 @@ class Handler(BaseHTTPRequestHandler):
             slug = p.path[3:].strip("/")
             # render the SPA; frontend reads ?c=<slug> (or /c/<slug>) and loads that comparison
             self._send(200, render(), "text/html")
+        elif p.path.startswith("/og/") and p.path.endswith(".svg"):
+            slug = p.path[len("/og/"):-len(".svg")].strip("/")
+            self._send(200, og_image(slug), "image/svg+xml")
         else:
             self._send(404, '{"error":"not found"}')
 
