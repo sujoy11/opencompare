@@ -307,6 +307,9 @@
 
       <button type="submit" class="btn-compare" id="runBtn">✦ Compare now</button>
       <div class="error-msg" id="errorMsg">⚠ <span id="errorText">Something went wrong. Try again.</span></div>
+
+      <div class="section-label" id="catsLabel" style="display:none; margin-top:28px;">Popular categories</div>
+      <div class="cat-row" id="catsRow"></div>
     </form>
 
     <section class="result" id="result">
@@ -504,6 +507,20 @@
     } catch (e) { /* non-critical */ }
   }
 
+  async function loadCategories(){
+    try {
+      const res = await fetch('/api/categories');
+      const cats = await res.json();
+      if (Array.isArray(cats) && cats.length){
+        $('catsLabel').style.display = '';
+        const row = $('catsRow');
+        clearChildren(row);
+        cats.forEach((c, i) => { const el = document.createElement('span'); el.className = 'cat-chip c' + (i % 5); el.textContent = c; row.appendChild(el); });
+      }
+    } catch (e) { /* non-critical */ }
+  }
+
+  loadCategories();
   loadRecent();
 })();
 </script>
