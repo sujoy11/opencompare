@@ -161,6 +161,9 @@
     box-shadow:0 8px 18px -6px rgba(124,92,252,0.5);
   }
   .vs-badge.is-loading::before{
+    /* Keep the masked conic gradient above the page, extending 6px past the badge. */
+    inset:-6px;
+    z-index:0;
     opacity:1;
     background:conic-gradient(from 0deg, var(--violet), var(--coral), var(--mint), var(--violet));
     animation:badge-loading-ring 0.9s linear infinite;
