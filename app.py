@@ -307,6 +307,14 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(404, "not found")
         elif p.path == "/api/compare":
             self._send(200, json.dumps(COMPARES))
+        elif p.path == "/api/trending":
+            # most recent comparisons first (ephemeral store; best-effort)
+            recent = list(reversed(COMPARES[-50:]))
+            self._send(200, json.dumps(recent))
+        elif p.path == "/trending":
+            self._send(200, render(), "text/html")
+        elif p.path.startswith("/cat/"):
+            self._send(200, render(), "text/html")
         elif p.path == "/api/categories":
             self._send(200, json.dumps(CATEGORIES))
         elif p.path == "/api/debug":

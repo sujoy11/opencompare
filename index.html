@@ -69,6 +69,12 @@
 
   /* ---------- header ---------- */
   header{display:flex; align-items:center; justify-content:space-between; margin-bottom:30px;}
+  .header-nav{display:flex; align-items:center; gap:10px;}
+  .nav-link{
+    font-size:12.5px; font-weight:700; color:var(--violet); text-decoration:none;
+    background:var(--violet-soft); padding:6px 12px; border-radius:99px; transition:filter .12s ease;
+  }
+  .nav-link:active{filter:brightness(0.95);}
   .brand{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:700; font-size:17px;}
   .brand-mark{
     width:30px; height:30px; border-radius:10px;
@@ -82,6 +88,28 @@
     font-size:11.5px; font-weight:600; border-radius:99px; padding:6px 12px;
   }
   .live-dot{width:6px; height:6px; border-radius:50%; background:var(--mint);}
+
+  /* ---------- list view (trending / categories) ---------- */
+  .list-view{margin-top:6px;}
+  .back-btn{
+    border:none; background:var(--card); color:var(--muted); cursor:pointer;
+    font-family:var(--font-body); font-weight:600; font-size:13px;
+    border:1px solid var(--border); border-radius:99px; padding:8px 14px; margin-bottom:18px;
+    transition:border-color .12s ease;
+  }
+  .back-btn:active{border-color:var(--muted-2);}
+  .list-title{font-family:var(--font-display); font-weight:800; font-size:24px; margin:0 0 18px;}
+  .list-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .list-card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:16px; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .list-card:active{transform:scale(0.98);}
+  .list-card:hover{box-shadow:0 10px 24px -18px rgba(24,21,33,0.25);}
+  .list-vs{font-family:var(--font-display); font-weight:700; font-size:15px; margin-bottom:8px;}
+  .list-vs .a{color:var(--blue);}
+  .list-vs .b{color:var(--coral);}
+  .list-meta{font-size:11.5px; color:var(--muted);}
 
   /* ---------- hero ---------- */
   .eyebrow{
@@ -299,13 +327,24 @@
   <div class="shell">
     <header>
       <div class="brand"><span class="brand-mark">✦</span> OpenCompare</div>
-      <div class="live-pill"><span class="live-dot"></span> Engine live</div>
+      <div class="header-nav">
+        <a href="/trending" class="nav-link">📊 Trending</a>
+        <div class="live-pill"><span class="live-dot"></span> Engine live</div>
+      </div>
     </header>
+
+    <!-- Trending / Category list view (shown when URL is /trending or /cat/<name>) -->
+    <section class="list-view" id="listView" style="display:none;">
+      <button type="button" class="back-btn" id="backBtn">← Back to compare</button>
+      <h2 class="list-title" id="listTitle">Trending comparisons</h2>
+      <div class="list-grid" id="listGrid"></div>
+    </section>
 
     <span class="eyebrow">AI COMPARISON ENGINE</span>
     <h1>Compare anything.<br><span class="grad">Decide smarter.</span></h1>
     <p class="sub">Drop in two items. Get a fact-based verdict.</p>
 
+    <div id="mainView">
     <form id="duelForm" autocomplete="off">
       <div class="duel">
         <div class="side side--a">
@@ -333,6 +372,7 @@
       <div class="section-label" id="catsLabel" style="display:none; margin-top:28px;">Popular categories</div>
       <div class="cat-row" id="catsRow"></div>
     </form>
+    </div><!-- /mainView -->
 
     <section class="result" id="result">
       <div class="winner-banner" id="winnerBanner">
@@ -562,12 +602,79 @@
         $('catsLabel').style.display = '';
         const row = $('catsRow');
         clearChildren(row);
-        cats.forEach((c, i) => { const el = document.createElement('span'); el.className = 'cat-chip c' + (i % 5); el.textContent = c; row.appendChild(el); });
+        cats.forEach((c, i) => { const el = document.createElement('a'); el.className = 'cat-chip c' + (i % 5); el.textContent = c; el.href = '/cat/' + encodeURIComponent(c); row.appendChild(el); });
       }
     } catch (e) { /* non-critical */ }
   }
 
   loadCategories();
+
+  // ---------- trending / category list view ----------
+  function showListView(title, items){
+    $('listTitle').textContent = title;
+    const grid = $('listGrid');
+    clearChildren(grid);
+    if (!items || !items.length){
+      const empty = document.createElement('div');
+      empty.className = 'list-meta';
+      empty.style.gridColumn = '1 / -1';
+      empty.textContent = 'No comparisons yet. Be the first to compare!';
+      grid.appendChild(empty);
+    } else {
+      items.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'list-card';
+        const vs = document.createElement('div');
+        vs.className = 'list-vs';
+        vs.innerHTML = '<span class="a"></span> vs <span class="b"></span>';
+        vs.querySelector('.a').textContent = it.item_a;
+        vs.querySelector('.b').textContent = it.item_b;
+        const meta = document.createElement('div');
+        meta.className = 'list-meta';
+        meta.textContent = (it.result?.winner === 'A' ? it.item_a + ' wins' : it.result?.winner === 'B' ? it.item_b + ' wins' : 'Tie') + ' · ' + (it.time || '');
+        card.appendChild(vs); card.appendChild(meta);
+        card.addEventListener('click', () => {
+          location.href = '/c/' + it.slug + '?a=' + encodeURIComponent(it.item_a) + '&b=' + encodeURIComponent(it.item_b)
+            + '&w=' + encodeURIComponent((it.result?.winner === 'A' ? it.item_a + ' wins' : it.result?.winner === 'B' ? it.item_b + ' wins' : 'Too close to call'))
+            + '&sa=' + encodeURIComponent(it.result?.scores?.a ?? '') + '&sb=' + encodeURIComponent(it.result?.scores?.b ?? '');
+        });
+        grid.appendChild(card);
+      });
+    }
+    $('mainView').style.display = 'none';
+    $('result').style.display = 'none';
+    $('listView').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function hideListView(){
+    $('listView').style.display = 'none';
+    $('mainView').style.display = '';
+  }
+  $('backBtn').addEventListener('click', () => { history.pushState(null, '', '/'); hideListView(); });
+
+  async function loadListView(){
+    const m = location.pathname.match(/^\/trending$/);
+    const cat = location.pathname.match(/^\/cat\/(.+)$/);
+    if (!m && !cat) return;
+    try {
+      if (m){
+        const res = await fetch('/api/trending');
+        const items = await res.json();
+        showListView('🔥 Trending comparisons', items);
+      } else if (cat){
+        const name = decodeURIComponent(cat[1]);
+        const res = await fetch('/api/compare');
+        const all = await res.json();
+        // filter: match category keyword against either item name (best-effort, no stored category yet)
+        const items = (Array.isArray(all) ? all : []).filter(it =>
+          (it.item_a + ' ' + it.item_b).toLowerCase().includes(name.toLowerCase())
+        );
+        showListView('📂 ' + name, items.length ? items : (Array.isArray(all) ? all : []));
+      }
+    } catch (e) { /* non-critical */ }
+  }
+  loadListView();
 
   // load a shared comparison if URL is /c/<slug> or /c/<slug>?a=..&b=..&w=..&sa=..&sb=..
   async function loadFromSlug(){
