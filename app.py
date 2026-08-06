@@ -72,7 +72,7 @@ def _call_mistral(prompt):
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.3,
-        "max_tokens": 800,
+        "max_tokens": 1400,
     }).encode()
     req = urllib.request.Request(
         MISTRAL_URL, data=body,
@@ -158,6 +158,7 @@ def compare(a, b):
         result = _parse_json(_call_mistral(f"Compare '{a}' vs '{b}'.\n{PROMPT}"))
         if "scores" not in result or "winner" not in result:
             raise ValueError("incomplete")
+        result = _fill(result, a, b)
         CACHE[key] = result
         return result
     except Exception as e:
@@ -167,6 +168,21 @@ def compare(a, b):
         if "429" in str(e) or "too many" in str(e).lower() or "rate" in str(e).lower():
             return {"_rate_limited": True, "a": a, "b": b}
         return _fallback(a, b)
+
+
+def _fill(result, a, b):
+    """Ensure all UI-expected text fields are present (never blank)."""
+    if not isinstance(result, dict):
+        return _fallback(a, b)
+    if not result.get("best_for"):
+        result["best_for"] = f"Depends on priorities — {a} suits some needs, {b} others."
+    if not result.get("summary"):
+        result["summary"] = f"{a} and {b} each have distinct strengths; the better pick depends on what you value most."
+    if not result.get("recommendation"):
+        result["recommendation"] = f"Choose {a} if its strengths align with your needs; pick {b} otherwise. Try both where possible."
+    if not result.get("alternatives"):
+        result["alternatives"] = []
+    return result
 
 
 def _fallback(a, b):
