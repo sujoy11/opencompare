@@ -452,14 +452,25 @@
     altRow.style.display = alts.length ? '' : 'none';
     alts.forEach(x => { const el = document.createElement('span'); el.className = 'vp-alt'; el.textContent = x; altList.appendChild(el); });
 
-    // shareable URL + share row
+    // shareable URL + share row (stateless: data passed as query so it survives server restarts)
     if (slug){
-      const url = location.origin + '/c/' + slug;
-      $('shareUrl').textContent = url;
+      const r = result || {};
+      const sc = r.scores || {};
+      let w = r.winner;
+      if (w === 'A') w = a + ' wins';
+      else if (w === 'B') w = b + ' wins';
+      else if (w === 'Tie') w = 'Too close to call';
+      else w = 'VS';
+      const q = new URLSearchParams({
+        a: a, b: b, w: w,
+        sa: String(sc.a ?? ''), sb: String(sc.b ?? '')
+      }).toString();
+      const shareUrl = location.origin + '/c/' + slug + '?d=' + encodeURIComponent(q);
+      $('shareUrl').textContent = shareUrl;
       $('shareRow').style.display = 'flex';
-      history.replaceState(null, '', '/c/' + slug);
-      // update social share image to this comparison
-      const og = 'https://opencompare.onrender.com/og/' + slug + '.svg';
+      history.replaceState(null, '', '/c/' + slug + '?' + q);
+      // update social share image to this comparison (stateless)
+      const og = location.origin + '/og/' + slug + '.svg?' + q;
       const ogEl = document.getElementById('ogImage');
       const twEl = document.getElementById('twImage');
       if (ogEl) ogEl.setAttribute('content', og);
@@ -540,11 +551,30 @@
 
   loadCategories();
 
-  // load a shared comparison if URL is /c/<slug>
+  // load a shared comparison if URL is /c/<slug> or /c/<slug>?d=<encoded>
   async function loadFromSlug(){
     const m = location.pathname.match(/^\/c\/(.+)$/);
     if (!m) return;
     const slug = m[1];
+    // stateless: data may be in ?d= query
+    const d = new URLSearchParams(location.search).get('d');
+    if (d){
+      const q = new URLSearchParams(decodeURIComponent(d));
+      const a = q.get('a'), b = q.get('b'), w = q.get('w');
+      const sa = q.get('sa'), sb = q.get('sb');
+      if (a && b){
+        inputA.value = a; inputB.value = b;
+        const result = {
+          winner: w === (a+' wins') ? 'A' : (w === (b+' wins') ? 'B' : (w === 'Too close to call' ? 'Tie' : 'VS')),
+          scores: { a: sa || 0, b: sb || 0 },
+          a_pros: [], a_cons: [], b_pros: [], b_cons: [],
+          metrics: [], best_for: '', summary: '', recommendation: '', alternatives: []
+        };
+        renderResult(a, b, result, '', slug);
+        return;
+      }
+    }
+    // fallback: try server store (may be empty after a cold start)
     try {
       const res = await fetch('/api/compare');
       const items = await res.json();

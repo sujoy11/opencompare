@@ -229,28 +229,36 @@ def _find_by_slug(slug):
     return None
 
 
-def og_image(slug):
-    """Generate a share-card SVG for a comparison (dependency-free)."""
-    item = _find_by_slug(slug)
-    if not item:
-        # fallback blank card
-        a, b, winner, sa, sb = "Item A", "Item B", "VS", "0", "0"
-    else:
-        a = item.get("item_a", "Item A")
-        b = item.get("item_b", "Item B")
-        r = item.get("result", {}) or {}
-        sc = r.get("scores", {}) or {}
-        sa = str(sc.get("a", ""))
-        sb = str(sc.get("b", ""))
-        w = r.get("winner", "")
-        if w == "A":
-            winner = f"{a} wins"
-        elif w == "B":
-            winner = f"{b} wins"
-        elif w == "Tie":
-            winner = "Too close to call"
-        else:
-            winner = "VS"
+def og_image(slug, query=""):
+    """Generate a share-card SVG for a comparison (dependency-free).
+    Reads data from query string when present (stateless), else from stored COMPARES."""
+    from urllib.parse import parse_qs
+    q = parse_qs(query)
+    def g(k, d=""):
+        return q.get(k, [d])[0]
+    a = g("a")
+    b = g("b")
+    winner = g("w")
+    sa = g("sa")
+    sb = g("sb")
+    # if no query data, try stored comparison
+    if not a and not b:
+        item = _find_by_slug(slug)
+        if item:
+            a = item.get("item_a", "Item A")
+            b = item.get("item_b", "Item B")
+            r = item.get("result", {}) or {}
+            sc = r.get("scores", {}) or {}
+            sa = str(sc.get("a", ""))
+            sb = str(sc.get("b", ""))
+            w = r.get("winner", "")
+            if w == "A": winner = f"{a} wins"
+            elif w == "B": winner = f"{b} wins"
+            elif w == "Tie": winner = "Too close to call"
+            else: winner = "VS"
+    if not a: a = "Item A"
+    if not b: b = "Item B"
+    if not winner: winner = "VS"
     # escape XML
     def esc(s):
         return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
@@ -331,7 +339,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, render(), "text/html")
         elif p.path.startswith("/og/") and p.path.endswith(".svg"):
             slug = p.path[len("/og/"):-len(".svg")].strip("/")
-            self._send(200, og_image(slug), "image/svg+xml")
+            self._send(200, og_image(slug, p.query), "image/svg+xml")
         else:
             self._send(404, '{"error":"not found"}')
 
