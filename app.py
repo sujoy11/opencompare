@@ -3,13 +3,13 @@
 OpenCompare — AI comparison engine (MVP, professional build).
 Pure stdlib HTTP server · Gemini for analysis · graceful fallback.
 """
+import re
 import json
 import os
 import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 import urllib.request
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = HERE
 DATA = os.path.join(HERE, "compare.json")
@@ -31,6 +31,14 @@ if not MISTRAL_KEY and os.path.exists(KEY_FILE):
 
 MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions" if MISTRAL_KEY else ""
 MISTRAL_MODEL = "mistral-small-latest"
+
+def slugify(text):
+    """Turn 'ChatGPT' and 'Claude' into 'chatgpt-vs-claude'."""
+    s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return s or "item"
+
+def make_slug(a, b):
+    return f"{slugify(a)}-vs-{slugify(b)}"
 
 CATEGORIES = [
     "AI Tools", "Software", "Hosting", "Smartphones", "Laptops",
@@ -266,6 +274,10 @@ class Handler(BaseHTTPRequestHandler):
             }))
         elif p.path == "/health":
             self._send(200, '{"status":"ok"}')
+        elif p.path.startswith("/c/"):
+            slug = p.path[3:].strip("/")
+            # render the SPA; frontend reads ?c=<slug> (or /c/<slug>) and loads that comparison
+            self._send(200, render(), "text/html")
         else:
             self._send(404, '{"error":"not found"}')
 
@@ -297,6 +309,7 @@ class Handler(BaseHTTPRequestHandler):
             "id": len(COMPARES) + 1,
             "item_a": a,
             "item_b": b,
+            "slug": make_slug(a, b),
             "result": result,
             "time": datetime.datetime.now().strftime("%H:%M"),
         }

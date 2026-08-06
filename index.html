@@ -264,6 +264,19 @@
   .metric-val.b{background:var(--coral-soft); color:var(--coral);}
 
   .verdict-card{background:var(--violet-soft); border:none;}
+  .share-row{display:flex; align-items:center; gap:10px; margin-top:14px;}
+  .share-url{
+    flex:1; min-width:0; font-family:var(--font-mono); font-size:11.5px; color:var(--muted);
+    background:var(--card); border:1px solid var(--border); border-radius:99px;
+    padding:9px 14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .share-btn{
+    flex-shrink:0; border:none; cursor:pointer; border-radius:99px; padding:9px 16px;
+    font-family:var(--font-display); font-weight:700; font-size:13px; color:#fff;
+    background:linear-gradient(90deg, var(--violet), var(--coral));
+    box-shadow:0 8px 18px -10px rgba(124,92,252,0.6); transition:transform .12s ease;
+  }
+  .share-btn:active{transform:scale(0.96);}
   .vp-row{margin-bottom:13px;}
   .vp-row:last-child{margin-bottom:0;}
   .vp-label{font-size:11px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;}
@@ -350,6 +363,11 @@
         <div class="vp-row"><div class="vp-label">Recommendation</div><div class="vp-text" id="recommendation"></div></div>
         <div class="vp-row" id="altRow"><div class="vp-label">Also worth a look</div><div class="vp-alts" id="altList"></div></div>
       </div>
+
+      <div class="share-row" id="shareRow" style="display:none;">
+        <span class="share-url" id="shareUrl"></span>
+        <button type="button" class="share-btn" id="shareBtn">🔗 Copy link</button>
+      </div>
     </section>
 
     <footer>
@@ -382,7 +400,7 @@
     return el;
   }
 
-  function renderResult(a, b, result, timeLabel){
+  function renderResult(a, b, result, timeLabel, slug){
     const scoreA = Number(result?.scores?.a ?? 0), scoreB = Number(result?.scores?.b ?? 0);
     const total = scoreA + scoreB || 1;
     const pctA = Math.max(6, (scoreA/total)*100), pctB = Math.max(6, 100-pctA);
@@ -432,9 +450,34 @@
     altRow.style.display = alts.length ? '' : 'none';
     alts.forEach(x => { const el = document.createElement('span'); el.className = 'vp-alt'; el.textContent = x; altList.appendChild(el); });
 
+    // shareable URL + share row
+    if (slug){
+      const url = location.origin + '/c/' + slug;
+      $('shareUrl').textContent = url;
+      $('shareRow').style.display = 'flex';
+      history.replaceState(null, '', '/c/' + slug);
+    } else {
+      $('shareRow').style.display = 'none';
+    }
+
     resultEl.classList.add('is-visible');
     resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  function copyShare(){
+    const url = $('shareUrl').textContent;
+    if (navigator.share){
+      navigator.share({ title: 'OpenCompare', url: url }).catch(()=>{});
+      return;
+    }
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = $('shareBtn');
+      const old = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => { btn.textContent = old; }, 1500);
+    });
+  }
+  $('shareBtn').addEventListener('click', copyShare);
 
   function showError(msg){ errorText.textContent = msg; errorMsg.classList.add('is-visible'); }
   function hideError(){ errorMsg.classList.remove('is-visible'); }
@@ -466,7 +509,7 @@
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Comparison failed.');
-      renderResult(a, b, data.item.result, data.item.time);
+      renderResult(a, b, data.item.result, data.item.time, data.item.slug);
     } catch (err) {
       showError(err.message || 'Could not reach the comparison engine. Try again.');
     } finally {
@@ -488,6 +531,23 @@
   }
 
   loadCategories();
+
+  // load a shared comparison if URL is /c/<slug>
+  async function loadFromSlug(){
+    const m = location.pathname.match(/^\/c\/(.+)$/);
+    if (!m) return;
+    const slug = m[1];
+    try {
+      const res = await fetch('/api/compare');
+      const items = await res.json();
+      const found = (Array.isArray(items) ? items : []).find(it => it.slug === slug);
+      if (found){
+        inputA.value = found.item_a; inputB.value = found.item_b;
+        renderResult(found.item_a, found.item_b, found.result, found.time, found.slug);
+      }
+    } catch (e) { /* non-critical */ }
+  }
+  loadFromSlug();
 })();
 </script>
 </body>
