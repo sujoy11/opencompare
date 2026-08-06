@@ -135,16 +135,28 @@
 
   .vs-wrap{display:flex; justify-content:center; margin:-13px 0; position:relative; z-index:2;}
   .vs-badge{
-    width:38px; height:38px; border-radius:50%;
-    background:linear-gradient(135deg, var(--violet), var(--coral));
-    color:#fff; font-family:var(--font-display); font-weight:700; font-size:11.5px;
+    position:relative;
+    width:40px; height:40px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:var(--font-display); font-weight:700; font-size:11.5px;
+    background:linear-gradient(135deg, var(--violet), var(--coral));
     box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg);
-    animation:pulse 2.6s ease-in-out infinite;
+    animation:glow 2.6s ease-in-out infinite;
   }
-  @keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.08);}}
-  @media (prefers-reduced-motion: reduce){ .vs-badge{animation:none;} }
+  /* spinning conic ring around the badge */
+  .vs-badge::before{
+    content:""; position:absolute; inset:-5px; border-radius:50%;
+    background:conic-gradient(from 0deg, var(--violet), var(--coral), var(--mint), var(--violet));
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    animation:ringspin 3.2s linear infinite;
+    z-index:-1;
+  }
+  @keyframes glow{0%,100%{box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg), 0 0 0 0 rgba(124,92,252,0.25);} 50%{box-shadow:0 8px 22px -6px rgba(255,107,107,0.6), 0 0 0 4px var(--bg), 0 0 0 7px rgba(124,92,252,0);}}
+  @keyframes ringspin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .vs-badge, .vs-badge::before{animation:none;} }
   .vs-badge.is-loading{animation:spin .8s linear infinite;}
+  .vs-badge.is-loading::before{animation:none; opacity:0;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
   /* ---------- examples & categories ---------- */
