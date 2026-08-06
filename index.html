@@ -95,7 +95,7 @@
     background:linear-gradient(90deg, var(--violet), var(--coral));
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .sub{color:var(--muted); font-size:15px; max-width:44ch; margin:0 0 30px;}
+  .sub{color:var(--muted); font-size:15px; max-width:44ch; margin:0 0 20px;}
 
   /* ---------- duel ---------- */
   .duel{display:flex; flex-direction:column; margin-bottom:8px;}
@@ -181,7 +181,7 @@
 
   /* ---------- button ---------- */
   .btn-compare{
-    width:100%; border:none; border-radius:99px; cursor:pointer; margin-top:26px;
+    width:100%; border:none; border-radius:99px; cursor:pointer; margin-top:20px;
     padding:17px; font-family:var(--font-display); font-weight:700; font-size:15.5px;
     color:#fff; background:linear-gradient(90deg, var(--violet), var(--coral));
     display:flex; align-items:center; justify-content:center; gap:8px;
@@ -304,9 +304,6 @@
         <button type="button" class="chip c2" data-a="iPhone" data-b="Samsung">iPhone vs Samsung</button>
         <button type="button" class="chip c3" data-a="Hostinger" data-b="Cloudflare">Hostinger vs Cloudflare</button>
       </div>
-
-      <div class="section-label" id="catsLabel" style="display:none;">Popular categories</div>
-      <div class="cat-row" id="catsRow"></div>
 
       <button type="submit" class="btn-compare" id="runBtn">✦ Compare now</button>
       <div class="error-msg" id="errorMsg">⚠ <span id="errorText">Something went wrong. Try again.</span></div>
@@ -499,19 +496,6 @@
     }
   });
 
-  async function loadCategories(){
-    try {
-      const res = await fetch('/api/categories');
-      const cats = await res.json();
-      if (Array.isArray(cats) && cats.length){
-        $('catsLabel').style.display = '';
-        const row = $('catsRow');
-        clearChildren(row);
-        cats.forEach((c, i) => { const el = document.createElement('span'); el.className = 'cat-chip c' + (i % 5); el.textContent = c; row.appendChild(el); });
-      }
-    } catch (e) { /* non-critical */ }
-  }
-
   async function loadRecent(){
     try {
       const res = await fetch('/api/compare');
@@ -520,7 +504,6 @@
     } catch (e) { /* non-critical */ }
   }
 
-  loadCategories();
   loadRecent();
 })();
 </script>
