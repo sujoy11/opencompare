@@ -95,7 +95,7 @@
     background:linear-gradient(90deg, var(--violet), var(--coral));
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .sub{color:var(--muted); font-size:15px; max-width:44ch; margin:0 0 20px;}
+  .sub{color:var(--muted); font-size:15px; max-width:44ch; margin:0 0 30px;}
 
   /* ---------- duel ---------- */
   .duel{display:flex; flex-direction:column; margin-bottom:8px;}
@@ -136,26 +136,33 @@
   .vs-wrap{display:flex; justify-content:center; margin:-13px 0; position:relative; z-index:2;}
   .vs-badge{
     position:relative;
-    width:40px; height:40px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    color:#fff; font-family:var(--font-display); font-weight:700; font-size:11.5px;
+    width:38px; height:38px; border-radius:50%;
     background:linear-gradient(135deg, var(--violet), var(--coral));
+    color:#fff; font-family:var(--font-display); font-weight:700; font-size:11.5px;
+    display:flex; align-items:center; justify-content:center;
     box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg);
-    animation:glow 2.6s ease-in-out infinite;
   }
-  /* loading spinner ring — classic bordered circle, hidden until loading */
-  .vs-ring{
-    position:absolute; inset:-6px; border-radius:50%; z-index:3; pointer-events:none;
-    border:3px solid rgba(124,92,252,0.25);
-    border-top-color:var(--violet);
-    opacity:0;
+
+  .vs-badge::after{
+    content:""; position:absolute; inset:-5px; border-radius:50%; padding:2.5px;
+    background:conic-gradient(from 0deg, var(--blue), var(--violet) 35%, var(--coral) 70%, var(--blue));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    opacity:0; transition:opacity .2s ease;
   }
-  @keyframes glow{0%,100%{box-shadow:0 8px 18px -6px rgba(124,92,252,0.5), 0 0 0 4px var(--bg), 0 0 0 0 rgba(124,92,252,0.25);} 50%{box-shadow:0 8px 22px -6px rgba(255,107,107,0.6), 0 0 0 4px var(--bg), 0 0 0 7px rgba(124,92,252,0);}}
-  @keyframes ringspin{to{transform:rotate(360deg);}}
-  @media (prefers-reduced-motion: reduce){ .vs-ring{animation:none;} }
-  /* loading: ring bright + fast, badge no pump */
-  .vs-badge.is-loading{animation:none; box-shadow:0 8px 18px -6px rgba(124,92,252,0.5);}
-  .vs-badge.is-loading .vs-ring{opacity:1; animation:ringspin 0.9s linear infinite;}
+  .vs-badge.is-loading::after{opacity:1; animation:ringSpin .85s linear infinite;}
+  @keyframes ringSpin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .vs-badge.is-loading::after{animation:none;} }
+
+  .vs-text{display:inline-flex; transition:opacity .15s ease;}
+  .vs-badge.is-loading .vs-text{display:none;}
+  .vs-loader{display:none; align-items:center; gap:3px;}
+  .vs-badge.is-loading .vs-loader{display:inline-flex;}
+  .vs-loader span{width:4px; height:4px; border-radius:50%; background:#fff; animation:vsDot 0.9s infinite ease-in-out;}
+  .vs-loader span:nth-child(2){animation-delay:.15s;}
+  .vs-loader span:nth-child(3){animation-delay:.3s;}
+  @keyframes vsDot{0%,80%,100%{transform:scale(0.6); opacity:0.45;} 40%{transform:scale(1); opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ .vs-loader span{animation:none; opacity:0.9;} }
 
   /* ---------- examples & categories ---------- */
   .section-label{
@@ -191,7 +198,7 @@
 
   /* ---------- button ---------- */
   .btn-compare{
-    width:100%; border:none; border-radius:99px; cursor:pointer; margin-top:20px;
+    width:100%; border:none; border-radius:99px; cursor:pointer; margin-top:26px;
     padding:17px; font-family:var(--font-display); font-weight:700; font-size:15.5px;
     color:#fff; background:linear-gradient(90deg, var(--violet), var(--coral));
     display:flex; align-items:center; justify-content:center; gap:8px;
@@ -300,7 +307,7 @@
           <div class="side-top"><span class="badge-tag">A</span><span class="side-label">Item A</span></div>
           <input type="text" id="itemA" placeholder="e.g. ChatGPT" maxlength="60" required>
         </div>
-        <div class="vs-wrap"><div class="vs-badge" id="vsBadge"><span class="vs-ring"></span>VS</div></div>
+        <div class="vs-wrap"><div class="vs-badge" id="vsBadge"><span class="vs-text">VS</span><span class="vs-loader"><span></span><span></span><span></span></span></div></div>
         <div class="side side--b">
           <div class="side-top"><span class="badge-tag">B</span><span class="side-label">Item B</span></div>
           <input type="text" id="itemB" placeholder="e.g. Claude" maxlength="60" required>
@@ -509,14 +516,6 @@
     }
   });
 
-  async function loadRecent(){
-    try {
-      const res = await fetch('/api/compare');
-      const items = await res.json();
-      if (Array.isArray(items)){ allCompares = items; renderRecent(items); }
-    } catch (e) { /* non-critical */ }
-  }
-
   async function loadCategories(){
     try {
       const res = await fetch('/api/categories');
@@ -527,6 +526,14 @@
         clearChildren(row);
         cats.forEach((c, i) => { const el = document.createElement('span'); el.className = 'cat-chip c' + (i % 5); el.textContent = c; row.appendChild(el); });
       }
+    } catch (e) { /* non-critical */ }
+  }
+
+  async function loadRecent(){
+    try {
+      const res = await fetch('/api/compare');
+      const items = await res.json();
+      if (Array.isArray(items)){ allCompares = items; renderRecent(items); }
     } catch (e) { /* non-critical */ }
   }
 
