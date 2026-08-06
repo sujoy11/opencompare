@@ -272,13 +272,16 @@
     background:var(--card); border:1px solid var(--border); border-radius:99px;
     padding:9px 14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
+  .share-btns{display:flex; gap:8px; flex-shrink:0;}
   .share-btn{
-    flex-shrink:0; border:none; cursor:pointer; border-radius:99px; padding:9px 16px;
-    font-family:var(--font-display); font-weight:700; font-size:13px; color:#fff;
-    background:linear-gradient(90deg, var(--violet), var(--coral));
-    box-shadow:0 8px 18px -10px rgba(124,92,252,0.6); transition:transform .12s ease;
+    width:40px; height:40px; border-radius:50%; border:none; cursor:pointer;
+    font-size:17px; display:flex; align-items:center; justify-content:center;
+    color:#fff; background:linear-gradient(90deg, var(--violet), var(--coral));
+    box-shadow:0 6px 14px -8px rgba(124,92,252,0.6); transition:transform .12s ease;
   }
-  .share-btn:active{transform:scale(0.96);}
+  .share-btn:active{transform:scale(0.92);}
+  .share-wa{background:#25D366;}
+  .share-x{background:#000;}
   .vp-row{margin-bottom:13px;}
   .vp-row:last-child{margin-bottom:0;}
   .vp-label{font-size:11px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;}
@@ -368,7 +371,11 @@
 
       <div class="share-row" id="shareRow" style="display:none;">
         <span class="share-url" id="shareUrl"></span>
-        <button type="button" class="share-btn" id="shareBtn">🔗 Copy link</button>
+        <div class="share-btns">
+          <button type="button" class="share-btn" id="shareBtn" title="Copy link">🔗</button>
+          <button type="button" class="share-btn share-wa" id="waBtn" title="Share on WhatsApp">💬</button>
+          <button type="button" class="share-btn share-x" id="xBtn" title="Share on X">𝕏</button>
+        </div>
       </div>
     </section>
 
@@ -492,11 +499,22 @@
     navigator.clipboard.writeText(url).then(() => {
       const btn = $('shareBtn');
       const old = btn.textContent;
-      btn.textContent = '✓ Copied';
+      btn.textContent = '✓';
       setTimeout(() => { btn.textContent = old; }, 1500);
     });
   }
+  function shareWA(){
+    const url = encodeURIComponent($('shareUrl').textContent);
+    window.open('https://wa.me/?text=' + url, '_blank');
+  }
+  function shareX(){
+    const url = encodeURIComponent($('shareUrl').textContent);
+    const text = encodeURIComponent('Check out this OpenCompare verdict:');
+    window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
+  }
   $('shareBtn').addEventListener('click', copyShare);
+  $('waBtn').addEventListener('click', shareWA);
+  $('xBtn').addEventListener('click', shareX);
 
   function showError(msg){ errorText.textContent = msg; errorMsg.classList.add('is-visible'); }
   function hideError(){ errorMsg.classList.remove('is-visible'); }
