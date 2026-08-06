@@ -316,6 +316,14 @@
   .vp-text{font-size:13.5px; color:var(--text);}
   .vp-alts{display:flex; flex-wrap:wrap; gap:6px;}
   .vp-alt{font-size:11.5px; font-weight:600; color:var(--violet); background:#fff; border-radius:99px; padding:5px 11px;}
+  .roles-list{display:flex; flex-direction:column; gap:8px; margin-top:2px;}
+  .role-item{display:flex; align-items:baseline; gap:8px; font-size:13px;}
+  .role-item .role-name{font-weight:600; color:var(--text); min-width:88px; flex-shrink:0;}
+  .role-item .role-arrow{color:var(--muted-2);}
+  .role-item .role-winner{font-weight:700;}
+  .role-item .role-winner.a{color:var(--blue);}
+  .role-item .role-winner.b{color:var(--coral);}
+  .role-item .role-reason{color:var(--muted); font-size:12px;}
 
   footer{margin-top:40px; text-align:center; font-size:11.5px; color:var(--muted-2);}
   footer div{margin-bottom:3px;}
@@ -404,6 +412,7 @@
 
       <div class="card verdict-card">
         <div class="vp-row"><div class="vp-label">Best for</div><div class="vp-text" id="bestFor"></div></div>
+        <div class="vp-row" id="rolesRow"><div class="vp-label">Best by use-case</div><div class="roles-list" id="rolesList"></div></div>
         <div class="vp-row"><div class="vp-label">Summary</div><div class="vp-text" id="summary"></div></div>
         <div class="vp-row"><div class="vp-label">Recommendation</div><div class="vp-text" id="recommendation"></div></div>
         <div class="vp-row" id="altRow"><div class="vp-label">Also worth a look</div><div class="vp-alts" id="altList"></div></div>
@@ -490,6 +499,29 @@
     });
 
     $('bestFor').textContent = result?.best_for || '—';
+
+    // role-based winners (Students/Coding/Budget ...)
+    const rolesList = $('rolesList'), rolesRow = $('rolesRow');
+    clearChildren(rolesList);
+    const roles = result?.best_for_roles || [];
+    if (roles.length){
+      rolesRow.style.display = '';
+      const aName = a, bName = b;
+      roles.forEach(r => {
+        const w = r.winner === 'A' ? aName : (r.winner === 'B' ? bName : 'Tie');
+        const item = document.createElement('div');
+        item.className = 'role-item';
+        const name = document.createElement('span'); name.className = 'role-name'; name.textContent = r.role || 'Use case';
+        const arrow = document.createElement('span'); arrow.className = 'role-arrow'; arrow.textContent = '→';
+        const win = document.createElement('span'); win.className = 'role-winner ' + (r.winner === 'A' ? 'a' : r.winner === 'B' ? 'b' : ''); win.textContent = w;
+        const reason = document.createElement('span'); reason.className = 'role-reason'; reason.textContent = r.reason || '';
+        item.appendChild(name); item.appendChild(arrow); item.appendChild(win); item.appendChild(reason);
+        rolesList.appendChild(item);
+      });
+    } else {
+      rolesRow.style.display = 'none';
+    }
+
     $('summary').textContent = result?.summary || '—';
     $('recommendation').textContent = result?.recommendation || '—';
 

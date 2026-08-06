@@ -63,11 +63,12 @@ PROMPT = (
     '{"label":"Integrations","a":"detailed answer","b":"detailed answer"},'
     '{"label":"Security","a":"detailed answer","b":"detailed answer"}],'
     '"best_for":"one detailed phrase explaining ideal user",'
+    '"best_for_roles":[{"role":"e.g. Students","winner":"A|B","reason":"one short sentence why this item wins for that role"},{"role":"e.g. Coding","winner":"A|B","reason":"short reason"},{"role":"e.g. Budget","winner":"A|B","reason":"short reason"}],'
     '"summary":"3-4 sentence detailed neutral summary covering key differences",'
     '"recommendation":"3-4 sentence detailed buyer advice: clearly state which to pick for whom and why (mention specific strengths, budget, and use-case)",'
     '"alternatives":["alt1","alt2"]}'
     '\n\nEXAMPLE of exact format you must follow:\n'
-    '{"winner":"Tie","scores":{"a":7.5,"b":7.5},"a_pros":["p1","p2","p3"],"a_cons":["c1","c2","c3"],"b_pros":["p1","p2","p3"],"b_cons":["c1","c2","c3"],"metrics":[{"label":"Price","a":"$999","b":"$899"},{"label":"Key Features","a":"x","b":"y"},{"label":"Performance","a":"x","b":"y"},{"label":"Ease of Use","a":"x","b":"y"},{"label":"Supported Platforms","a":"x","b":"y"},{"label":"Integrations","a":"x","b":"y"},{"label":"Security","a":"x","b":"y"}],"best_for":"phrase","summary":"2-3 sentences","recommendation":"3-4 sentences","alternatives":["alt1","alt2"]}'
+    '{"winner":"Tie","scores":{"a":7.5,"b":7.5},"a_pros":["p1","p2","p3"],"a_cons":["c1","c2","c3"],"b_pros":["p1","p2","p3"],"b_cons":["c1","c2","c3"],"metrics":[{"label":"Price","a":"$999","b":"$899"},{"label":"Key Features","a":"x","b":"y"},{"label":"Performance","a":"x","b":"y"},{"label":"Ease of Use","a":"x","b":"y"},{"label":"Supported Platforms","a":"x","b":"y"},{"label":"Integrations","a":"x","b":"y"},{"label":"Security","a":"x","b":"y"}],"best_for":"phrase","best_for_roles":[{"role":"Students","winner":"A","reason":"better for learning"},{"role":"Coding","winner":"B","reason":"stronger dev tools"},{"role":"Budget","winner":"A","reason":"cheaper plan"}],"summary":"2-3 sentences","recommendation":"3-4 sentences","alternatives":["alt1","alt2"]}'
 )
 
 
@@ -190,6 +191,8 @@ def _fill(result, a, b):
         result["recommendation"] = f"Choose {a} if its strengths align with your needs; pick {b} otherwise. Try both where possible."
     if not result.get("alternatives"):
         result["alternatives"] = []
+    if not result.get("best_for_roles"):
+        result["best_for_roles"] = []
     return result
 
 
