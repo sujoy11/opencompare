@@ -309,7 +309,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", ctype)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(body.encode())
+        if isinstance(body, bytes):
+            self.wfile.write(body)
+        else:
+            self.wfile.write(str(body).encode())
 
     def do_GET(self):
         p = urlparse(self.path)
