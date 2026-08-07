@@ -265,42 +265,111 @@ def og_image(slug, query=""):
     a = str(a)[:40]; b = str(b)[:40]; winner = str(winner)[:40]
     sa = str(sa)[:6]; sb = str(sb)[:6]
 
-    from io import BytesIO
-    from PIL import Image, ImageDraw, ImageFont
-
+    # ---- pure-Python PNG generator (no Pillow dependency) ----
+    import zlib, struct
     W, H = 1200, 630
-    img = Image.new("RGB", (W, H), (124, 92, 252))
-    draw = ImageDraw.Draw(img)
-    # gradient background (violet -> coral) drawn as horizontal bands
+    # gradient background (violet #7c5cfc -> coral #ff6b6b) per column
     c1 = (124, 92, 252); c2 = (255, 107, 107)
-    for x in range(W):
+    # 5x7 bitmap font for A-Z 0-9 space - . :  (each char = 7 rows x 5 cols, top-first, verified)
+    FONT = {
+        ' ':"00000000000000000000000000000000000",
+        '-':"00000000000000011100000000000000000",
+        '.':"00000000000000000000000000000000110",
+        '0':"01110100111001110101110011100101110",
+        '1':"00100011000010000100001000010001110",
+        '2':"01110100010000100110010001000011111",
+        '3':"11110000010000101110000010000111110",
+        '4':"00010001100101010010111110001000010",
+        '5':"11111100001111000001000011000101110",
+        '6':"01110100001000011110100011000101110",
+        '7':"11111000010001000100010000100001000",
+        '8':"01110100011000101110100011000101110",
+        '9':"01110100011000101111000010000101110",
+        ':':"00000000000011000000000000011000000",
+        'A':"01110100011000111111100011000110001",
+        'B':"11110100011000111110100011000111110",
+        'C':"01110100011000010000100001000101110",
+        'D':"11110100011000110001100011000111110",
+        'E':"11111100001000011110100001000011111",
+        'F':"11111100001000011110100001000010000",
+        'G':"01110100011000010111100011000101110",
+        'H':"10001100011000111111100011000110001",
+        'I':"01110001000010000100001000010001110",
+        'J':"00111000100001000010000101001001100",
+        'K':"10001100101010011000101001001010001",
+        'L':"10000100001000010000100001000011111",
+        'M':"10001110111010110101100011000110001",
+        'N':"10001110011010110011100011000110001",
+        'O':"01110100011000110001100011000101110",
+        'P':"11110100011000111110100001000010000",
+        'Q':"01110100011000110001101011001001101",
+        'R':"11110100011000111110101001001010001",
+        'S':"01111100001000001110000010000111110",
+        'T':"11111001000010000100001000010000100",
+        'U':"10001100011000110001100011000101110",
+        'V':"10001100011000110001100010101000100",
+        'W':"10001100011000110101101011101110001",
+        'X':"10001100010101000100010101000110001",
+        'Y':"10001100010101000100001000010000100",
+        'Z':"11111000010001000100010001000011111",
+    }
+    def glyph_rows(ch):
+        ch = ch.upper()
+        bits = FONT.get(ch, FONT[' '])
+        return [bits[i*5:(i+1)*5] for i in range(7)]
+
+    def px(x, y):
         t = x / W
-        col = (int(c1[0] + (c2[0]-c1[0])*t), int(c1[1] + (c2[1]-c1[1])*t), int(c1[2] + (c2[2]-c1[2])*t))
-        draw.line([(x, 0), (x, H)], fill=col)
+        return (int(c1[0]+(c2[0]-c1[0])*t), int(c1[1]+(c2[1]-c1[1])*t), int(c1[2]+(c2[2]-c1[2])*t))
 
-    def font(sz, bold=True):
-        try:
-            return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", sz)
-        except Exception:
-            return ImageFont.load_default()
+    # build pixel buffer (RGB tuples)
+    buf = [[px(x, y) for x in range(W)] for y in range(H)]
+    WHITE = (255, 255, 255); PINK = (255, 217, 217)
 
-    white = (255, 255, 255)
-    # brand
-    draw.text((W//2, 110), "OpenCompare", font=font(44), fill=white, anchor="mm")
-    # title A vs B
-    title = f"{a}  vs  {b}"
-    draw.text((W//2, 300), title, font=font(76), fill=white, anchor="mm")
-    # winner
-    draw.text((W//2, 410), winner, font=font(54), fill=(255, 217, 217), anchor="mm")
-    # scores
-    draw.text((W//2 - 170, 510), f"{sa}", font=font(50), fill=white, anchor="mm")
-    draw.text((W//2 + 170, 510), f"{sb}", font=font(50), fill=white, anchor="mm")
-    # footer
-    draw.text((W//2, 585), "Compare anything. Decide smarter.", font=font(28), fill=(255,255,255), anchor="mm")
+    def draw_text(text, cx, cy, color, scale=8):
+        rows = []
+        for ch in text:
+            rows.append(glyph_rows(ch))
+        # total width
+        char_w = 5 * scale + scale  # 5 cols + 1 space
+        total_w = len(text) * char_w - scale
+        x0 = int(cx - total_w / 2)
+        y0 = int(cy - (7 * scale) / 2)
+        for i, ch in enumerate(text):
+            gr = glyph_rows(ch)
+            ox = x0 + i * char_w
+            for r in range(7):
+                for c in range(5):
+                    if gr[r][c] == '1':
+                        for dy in range(scale):
+                            for dx in range(scale):
+                                xx = ox + c * scale + dx
+                                yy = y0 + r * scale + dy
+                                if 0 <= xx < W and 0 <= yy < H:
+                                    buf[yy][xx] = color
 
-    buf = BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
+    draw_text("OpenCompare", W//2, 90, WHITE, scale=6)
+    draw_text(f"{a} vs {b}", W//2, 290, WHITE, scale=10)
+    draw_text(winner, W//2, 410, PINK, scale=8)
+    draw_text(f"{sa}", W//2 - 180, 500, WHITE, scale=8)
+    draw_text(f"{sb}", W//2 + 180, 500, WHITE, scale=8)
+    draw_text("Compare anything. Decide smarter.", W//2, 580, WHITE, scale=4)
+
+    # encode PNG (truecolor 8-bit)
+    raw = bytearray()
+    for y in range(H):
+        raw.append(0)  # filter type 0
+        for x in range(W):
+            r, g, b = buf[y][x]
+            raw += bytes((r, g, b))
+    def chunk(typ, data):
+        c = typ + data
+        return struct.pack(">I", len(data)) + c + struct.pack(">I", zlib.crc32(c) & 0xffffffff)
+    png = b"\x89PNG\r\n\x1a\n"
+    png += chunk(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 2, 0, 0, 0))
+    png += chunk(b"IDAT", zlib.compress(bytes(raw), 9))
+    png += chunk(b"IEND", b"")
+    return png
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -315,6 +384,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(str(body).encode())
 
     def do_GET(self):
+        global LAST_ERROR
         p = urlparse(self.path)
         if p.path in ("/", "/index.html"):
             self._send(200, render(), "text/html")
@@ -414,7 +484,6 @@ class Handler(BaseHTTPRequestHandler):
                 data = og_image(slug, p.query)
                 self._send(200, data, "image/png")
             except Exception as e:
-                global LAST_ERROR
                 LAST_ERROR = f"og_image: {type(e).__name__}: {str(e)[:200]}"
                 # fallback: 1x1 transparent PNG so social cards never 502
                 fallback = bytes.fromhex("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6360000002000154a24f500000000049454e44ae426082")

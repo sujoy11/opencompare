@@ -1,2 +1,2 @@
-# Pure stdlib except Pillow (for PNG OG share images — WhatsApp/X require raster, not SVG)
-Pillow==10.4.0
+# No external dependencies — pure Python standard library
+# (Mistral API called via urllib.request; OG images generated with stdlib zlib/PNG encoder)
