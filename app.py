@@ -356,12 +356,18 @@ class Handler(BaseHTTPRequestHandler):
                     net_ok = f"FAIL HTTP {he.code}"
             except Exception as ne:
                 net_ok = f"FAIL: {type(ne).__name__}: {str(ne)[:100]}"
+            try:
+                import PIL
+                pil_ok = f"ok {PIL.__version__}"
+            except Exception as pe:
+                pil_ok = f"FAIL: {type(pe).__name__}: {str(pe)[:100]}"
             self._send(200, json.dumps({
                 "mistral_key_present": bool(MISTRAL_KEY),
                 "mistral_key_len": len(MISTRAL_KEY),
                 "mistral_model": MISTRAL_MODEL,
                 "port": os.environ.get("PORT", "unset"),
                 "network_to_mistral": net_ok,
+                "pil": pil_ok,
                 "last_error": LAST_ERROR,
             }))
         elif p.path == "/health":
@@ -404,8 +410,15 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, html, "text/html")
         elif p.path.startswith("/og/") and p.path.endswith((".svg", ".png")):
             slug = p.path[len("/og/"):].rsplit(".", 1)[0].strip("/")
-            data = og_image(slug, p.query)
-            self._send(200, data, "image/png")
+            try:
+                data = og_image(slug, p.query)
+                self._send(200, data, "image/png")
+            except Exception as e:
+                global LAST_ERROR
+                LAST_ERROR = f"og_image: {type(e).__name__}: {str(e)[:200]}"
+                # fallback: 1x1 transparent PNG so social cards never 502
+                fallback = bytes.fromhex("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6360000002000154a24f500000000049454e44ae426082")
+                self._send(200, fallback, "image/png")
         else:
             self._send(404, '{"error":"not found"}')
 
