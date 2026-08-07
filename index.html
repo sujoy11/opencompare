@@ -18,8 +18,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="OpenCompare — Compare Anything. Decide Smarter.">
 <meta name="twitter:description" content="Free AI comparison engine. Drop in two items and get an instant, neutral, detailed side-by-side comparison.">
-<meta property="og:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.svg" id="ogImage">
-<meta name="twitter:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.svg" id="twImage">
+<meta property="og:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.png" id="ogImage">
+<meta name="twitter:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.png" id="twImage">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -549,7 +549,7 @@
       $('shareRow').style.display = 'flex';
       history.replaceState(null, '', '/c/' + slug + '?' + q);
       // update social share image to this comparison (stateless)
-      const og = location.origin + '/og/' + slug + '.svg?' + q;
+      const og = location.origin + '/og/' + slug + '.png?' + q;
       const ogEl = document.getElementById('ogImage');
       const twEl = document.getElementById('twImage');
       if (ogEl) ogEl.setAttribute('content', og);

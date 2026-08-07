@@ -262,26 +262,45 @@ def og_image(slug, query=""):
     if not a: a = "Item A"
     if not b: b = "Item B"
     if not winner: winner = "VS"
-    # escape XML
-    def esc(s):
-        return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
-    a, b, winner = esc(a), esc(b), esc(winner)
-    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7c5cfc"/>
-      <stop offset="100%" stop-color="#ff6b6b"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <text x="600" y="120" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#ffffff" text-anchor="middle" opacity="0.9">OpenCompare</text>
-  <text x="600" y="300" font-family="Arial, sans-serif" font-size="84" font-weight="bold" fill="#ffffff" text-anchor="middle">{a} <tspan fill="#ffd9d9">vs</tspan> {b}</text>
-  <text x="600" y="400" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff" text-anchor="middle">{winner}</text>
-  <text x="430" y="500" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">{sa}</text>
-  <text x="770" y="500" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">{sb}</text>
-  <text x="600" y="585" font-family="Arial, sans-serif" font-size="28" fill="#ffffff" text-anchor="middle" opacity="0.85">Compare anything. Decide smarter.</text>
-</svg>'''
-    return svg
+    a = str(a)[:40]; b = str(b)[:40]; winner = str(winner)[:40]
+    sa = str(sa)[:6]; sb = str(sb)[:6]
+
+    from io import BytesIO
+    from PIL import Image, ImageDraw, ImageFont
+
+    W, H = 1200, 630
+    img = Image.new("RGB", (W, H), (124, 92, 252))
+    draw = ImageDraw.Draw(img)
+    # gradient background (violet -> coral) drawn as horizontal bands
+    c1 = (124, 92, 252); c2 = (255, 107, 107)
+    for x in range(W):
+        t = x / W
+        col = (int(c1[0] + (c2[0]-c1[0])*t), int(c1[1] + (c2[1]-c1[1])*t), int(c1[2] + (c2[2]-c1[2])*t))
+        draw.line([(x, 0), (x, H)], fill=col)
+
+    def font(sz, bold=True):
+        try:
+            return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", sz)
+        except Exception:
+            return ImageFont.load_default()
+
+    white = (255, 255, 255)
+    # brand
+    draw.text((W//2, 110), "OpenCompare", font=font(44), fill=white, anchor="mm")
+    # title A vs B
+    title = f"{a}  vs  {b}"
+    draw.text((W//2, 300), title, font=font(76), fill=white, anchor="mm")
+    # winner
+    draw.text((W//2, 410), winner, font=font(54), fill=(255, 217, 217), anchor="mm")
+    # scores
+    draw.text((W//2 - 170, 510), f"{sa}", font=font(50), fill=white, anchor="mm")
+    draw.text((W//2 + 170, 510), f"{sb}", font=font(50), fill=white, anchor="mm")
+    # footer
+    draw.text((W//2, 585), "Compare anything. Decide smarter.", font=font(28), fill=(255,255,255), anchor="mm")
+
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -380,9 +399,10 @@ class Handler(BaseHTTPRequestHandler):
                     f'<meta name="twitter:description" content="{desc}">'
                 )
             self._send(200, html, "text/html")
-        elif p.path.startswith("/og/") and p.path.endswith(".svg"):
-            slug = p.path[len("/og/"):-len(".svg")].strip("/")
-            self._send(200, og_image(slug, p.query), "image/svg+xml")
+        elif p.path.startswith("/og/") and p.path.endswith((".svg", ".png")):
+            slug = p.path[len("/og/"):].rsplit(".", 1)[0].strip("/")
+            data = og_image(slug, p.query)
+            self._send(200, data, "image/png")
         else:
             self._send(404, '{"error":"not found"}')
 
