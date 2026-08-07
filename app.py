@@ -454,15 +454,15 @@ class Handler(BaseHTTPRequestHandler):
             sa = (q.get("sa") or [None])[0]
             sb = (q.get("sb") or [None])[0]
             if a and b:
-                og_url = f"/og/{slug}.svg?a={urllib.parse.quote(a)}&b={urllib.parse.quote(b)}" \
+                og_url = f"/og/{slug}.png?a={urllib.parse.quote(a)}&b={urllib.parse.quote(b)}" \
                          f"&w={urllib.parse.quote(w or '')}&sa={urllib.parse.quote(sa or '')}&sb={urllib.parse.quote(sb or '')}"
                 title = f"{a} vs {b} — OpenCompare verdict"
                 desc = f"AI comparison: {a} vs {b}. {w or 'See the verdict'}."
                 html = html.replace(
-                    '<meta property="og:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.svg" id="ogImage">',
+                    '<meta property="og:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.png" id="ogImage">',
                     f'<meta property="og:image" content="https://opencompare.onrender.com{og_url}" id="ogImage">'
                 ).replace(
-                    '<meta name="twitter:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.svg" id="twImage">',
+                    '<meta name="twitter:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.png" id="twImage">',
                     f'<meta name="twitter:image" content="https://opencompare.onrender.com{og_url}" id="twImage">'
                 ).replace(
                     '<meta property="og:title" content="OpenCompare — Compare Anything. Decide Smarter.">',
