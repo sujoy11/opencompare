@@ -346,8 +346,40 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, '{"status":"ok"}')
         elif p.path.startswith("/c/"):
             slug = p.path[3:].strip("/")
-            # render the SPA; frontend reads ?c=<slug> (or /c/<slug>) and loads that comparison
-            self._send(200, render(), "text/html")
+            html = render()
+            # server-side OG injection so social scrapers (WhatsApp/X/Telegram) see
+            # the per-comparison image WITHOUT running JS
+            q = urllib.parse.parse_qs(p.query)
+            a = (q.get("a") or [None])[0]
+            b = (q.get("b") or [None])[0]
+            w = (q.get("w") or [None])[0]
+            sa = (q.get("sa") or [None])[0]
+            sb = (q.get("sb") or [None])[0]
+            if a and b:
+                og_url = f"/og/{slug}.svg?a={urllib.parse.quote(a)}&b={urllib.parse.quote(b)}" \
+                         f"&w={urllib.parse.quote(w or '')}&sa={urllib.parse.quote(sa or '')}&sb={urllib.parse.quote(sb or '')}"
+                title = f"{a} vs {b} — OpenCompare verdict"
+                desc = f"AI comparison: {a} vs {b}. {w or 'See the verdict'}."
+                html = html.replace(
+                    '<meta property="og:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.svg" id="ogImage">',
+                    f'<meta property="og:image" content="https://opencompare.onrender.com{og_url}" id="ogImage">'
+                ).replace(
+                    '<meta name="twitter:image" content="https://opencompare.onrender.com/og/opencompare-vs-opencompare.svg" id="twImage">',
+                    f'<meta name="twitter:image" content="https://opencompare.onrender.com{og_url}" id="twImage">'
+                ).replace(
+                    '<meta property="og:title" content="OpenCompare — Compare Anything. Decide Smarter.">',
+                    f'<meta property="og:title" content="{title}">'
+                ).replace(
+                    '<meta name="twitter:title" content="OpenCompare — Compare Anything. Decide Smarter.">',
+                    f'<meta name="twitter:title" content="{title}">'
+                ).replace(
+                    '<meta property="og:description" content="Free AI comparison engine. Drop in two items and get an instant, neutral, detailed side-by-side comparison.">',
+                    f'<meta property="og:description" content="{desc}">'
+                ).replace(
+                    '<meta name="twitter:description" content="Free AI comparison engine. Drop in two items and get an instant, neutral, detailed side-by-side comparison.">',
+                    f'<meta name="twitter:description" content="{desc}">'
+                )
+            self._send(200, html, "text/html")
         elif p.path.startswith("/og/") and p.path.endswith(".svg"):
             slug = p.path[len("/og/"):-len(".svg")].strip("/")
             self._send(200, og_image(slug, p.query), "image/svg+xml")
